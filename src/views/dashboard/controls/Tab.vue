@@ -422,7 +422,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   right: 0;
-  top: 40vh;
+  top: 37vh;
   height: auto;
   width: 17px;
   .scroll-to {
@@ -437,7 +437,7 @@ export default defineComponent({
   .scroll-to.active {
     opacity: 1;
     padding: 6px;
-    background: #252a2f;
+    background: #1a1a1a;
   }
 }
 .tabs {
