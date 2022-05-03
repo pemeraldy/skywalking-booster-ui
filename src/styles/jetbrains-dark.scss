@@ -65,8 +65,9 @@
   border: 1px solid var(--spp-blue);
 }
 
-.el-popper.is-light {
-  background: var(--nice-black);
+.el-popper {
+  color: var(--spp-light-grey) !important;
+  background-color: var(--nice-black) !important;
   border: 1px solid var(--border-color) !important;
 }
 
