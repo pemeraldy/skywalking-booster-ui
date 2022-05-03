@@ -16,7 +16,7 @@ limitations under the License. -->
   <div class="dashboard-tool flex-h">
     <div class="flex-h">
       <div class="selectors-item" v-if="key !== 10">
-        <span class="label">$Service</span>
+        <span class="label">Service</span>
         <Selector
           v-model="states.currentService"
           :options="selectorStore.services"
@@ -30,8 +30,8 @@ limitations under the License. -->
         <span class="label">
           {{
             ["EndpointRelation", "Endpoint"].includes(dashboardStore.entity)
-              ? "$Endpoint"
-              : "$ServiceInstance"
+              ? "Endpoint"
+              : "ServiceInstance"
           }}
         </span>
         <Selector
@@ -48,7 +48,7 @@ limitations under the License. -->
         />
       </div>
       <div class="selectors-item" v-if="key === 2 || key === 4">
-        <span class="label">$DestinationService</span>
+        <span class="label">DestinationService</span>
         <Selector
           v-model="states.currentDestService"
           :options="selectorStore.destServices"

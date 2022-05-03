@@ -12,7 +12,7 @@
   --nice-black: #2b2b2b;
   --widget-background: #2b2b2b;
   --border-color: #1a1a1a;
-  --dashboard-tool-background: #1a1a1a;
+  --darkest-black: #1a1a1a;
   --table-header-color: #1a1a1a;
   --menu-selected-color: #313335;
 }
@@ -35,8 +35,9 @@
 }
 
 .el-input__inner {
-  --el-input-bg-color: var(--spp-other-green);
+  --el-input-bg-color: var(--darkest-black);
   //--el-input-border: red !important;
+  --el-text-color-placeholder: red !important;
 }
 
 .el-select {
@@ -78,7 +79,7 @@
 
 .el-input {
   --el-input-border: 1px solid var(--spp-blue);
-  --el-input-text-color: var(--spp-white);
+  --el-input-text-color: var(--spp-light-grey);
 }
 
 .el-select-dropdown__item.selected {
@@ -240,18 +241,18 @@
   background-color: var(--spp-other-green) !important;
 
   &:hover {
-    background-color: var(--dashboard-tool-background) !important;
+    background-color: var(--darkest-black) !important;
   }
 }
 
 .el-menu-item {
   &:hover {
-    background-color: var(--dashboard-tool-background) !important;
+    background-color: var(--darkest-black) !important;
   }
 }
 
 .el-menu-item.is-active {
-  background-color: var(--dashboard-tool-background) !important;
+  background-color: var(--darkest-black) !important;
 }
 
 .bar-select {
@@ -358,8 +359,8 @@
 }
 
 .dashboard-tool {
-  background: var(--dashboard-tool-background) !important;
-  border-bottom: 1px solid var(--border-color) !important;
+  background: var(--nice-black) !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 .micro-topo-chart {
@@ -490,7 +491,7 @@ a {
 }
 
 .el-collapse-item__content {
-  background-color: var(--dashboard-tool-background) !important;
+  background-color: var(--darkest-black) !important;
   border: 1px solid var(--border-color) !important;
 }
 
