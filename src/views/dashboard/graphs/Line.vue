@@ -117,19 +117,20 @@ function getOption() {
   let color: string[] = [];
   switch (keys.length) {
     case 2:
-      color = ["#629755", "#9876AA"];
+      color = ["#6897BB", "#9876AA"];
       break;
     case 1:
-      color = ["#629755"];
+      color = ["#6897BB"];
       break;
     default:
       color = [
-        "#629755",
+        "#6897BB",
         "#9876AA",
-        "#CC7832",
-        "#8A653B",
-        "#FF0000",
+        "#629755",
         "#FFC66D",
+        "#CC7832",
+        "#e1483b",
+        "#8A653B",
       ];
       break;
   }
@@ -191,6 +192,10 @@ function getOption() {
       axisLabel: {
         color: "#808080",
         fontSize: "13",
+        formatter: function (value) {
+          //todo: should only substr if date is current date
+          return (value as string).substring(0, value.indexOf("\n"));
+        },
       },
     },
     yAxis: {
