@@ -183,11 +183,6 @@ const arrayOfFilters = ref<filtersObject[]>([
     iconName: "epic",
     description: "Tags",
   },
-  {
-    name: "endpoints",
-    iconName: "device_hub",
-    description: "Endpoints",
-  },
 ]);
 const activeFilter = ref<string>("");
 function setFilter(filter: string) {
