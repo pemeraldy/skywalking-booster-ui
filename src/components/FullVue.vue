@@ -32,11 +32,30 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts">
-import { ref, watch, onMounted, defineComponent } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, defineComponent } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import Configuration from "../views/dashboard/configuration";
 import controls from "../views/dashboard/controls/index";
+import { useRoute } from "vue-router";
+import connect from "../hooks/useIDE";
+
+let isScrolling = false;
+function scrollStop(callback: { (): void; (): void }, refresh = 66) {
+  let scrollListener: number;
+  window.addEventListener(
+    "scroll",
+    function (event) {
+      isScrolling = true;
+      window.clearTimeout(scrollListener);
+      scrollListener = window.setTimeout(callback, refresh);
+    },
+    true
+  );
+}
+scrollStop(function () {
+  isScrolling = false;
+});
 
 let isScrolling = false;
 function scrollStop(callback: { (): void; (): void }, refresh = 66) {
@@ -70,6 +89,7 @@ export default defineComponent({
     const arrayOfItems = ref<Element[]>([]);
     const currentItem = ref<number>(0);
     const scrollWrapRef = ref<any>(null);
+    const { path, query } = useRoute();
     watch(
       () => dashboardStore.layout,
       () => {
@@ -124,38 +144,48 @@ export default defineComponent({
         scrollTo(currentItem.value);
       }
     }
+    function wheelGraphScroll(e: WheelEvent) {
+      e.preventDefault();
+      if (!isScrolling) {
+        if (e.deltaY < 0) {
+          scrollUp();
+        } else {
+          scrollDown();
+        }
+      }
+    }
+    function keyGraphScroll(e: KeyboardEvent) {
+      if (e.keyCode == 38) {
+        e.preventDefault();
+        scrollUp();
+      } else if (e.keyCode === 40) {
+        e.preventDefault();
+        scrollDown();
+      }
+    }
     function initScroller() {
-      scrollWrapRef?.value?.addEventListener(
-        "wheel",
-        (e: WheelEvent) => {
-          e.preventDefault();
-          if (!isScrolling) {
-            if (e.deltaY < 0) {
-              scrollUp();
-            } else {
-              scrollDown();
-            }
-          }
-        },
-        { passive: false }
-      );
-      document.addEventListener(
-        "keydown",
-        function (event) {
-          if (event.keyCode == 38) {
-            event.preventDefault();
-            scrollUp();
-          } else if (event.keyCode === 40) {
-            event.preventDefault();
-            scrollDown();
-          }
-        },
-        { passive: false }
-      );
+      //todo: smarter logic on when to add listeners
+      if (query["portal"] === "true" && path.endsWith("Activity")) {
+        console.log("Adding portal wheel/key listeners");
+        scrollWrapRef?.value?.addEventListener("wheel", wheelGraphScroll, {
+          passive: false,
+        });
+        document.addEventListener("keydown", keyGraphScroll, {
+          passive: false,
+        });
+      }
     }
     onMounted(() => {
       observeItems();
       initScroller();
+
+      if (query["portal"] === "true") {
+        connect();
+      }
+    });
+    onBeforeUnmount(() => {
+      scrollWrapRef?.value?.removeEventListener("wheel", wheelGraphScroll);
+      document.removeEventListener("keydown", keyGraphScroll);
     });
     return {
       t,
