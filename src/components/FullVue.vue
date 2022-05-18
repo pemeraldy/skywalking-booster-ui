@@ -57,23 +57,6 @@ scrollStop(function () {
   isScrolling = false;
 });
 
-let isScrolling = false;
-function scrollStop(callback: { (): void; (): void }, refresh = 66) {
-  let scrollListener: number;
-  window.addEventListener(
-    "scroll",
-    function (event) {
-      isScrolling = true;
-      window.clearTimeout(scrollListener);
-      scrollListener = window.setTimeout(callback, refresh);
-    },
-    true
-  );
-}
-scrollStop(function () {
-  isScrolling = false;
-});
-
 export default defineComponent({
   name: "FullView",
   props: {
