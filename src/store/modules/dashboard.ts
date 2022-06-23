@@ -40,6 +40,8 @@ interface DashboardState {
   showTopology: boolean;
   fullView: boolean;
   currentTabItems: LayoutConfig[];
+  showTraceTools: boolean;
+  showLogTools: boolean;
   dashboards: DashboardItem[];
   currentDashboard: Nullable<DashboardItem>;
   editMode: boolean;
@@ -57,6 +59,8 @@ export const dashboardStore = defineStore({
     durationTime: useAppStoreWithOut().durationTime,
     selectorStore: useSelectorStore(),
     showTopology: false,
+    showLogTools: false,
+    showTraceTools: false,
     fullView: false,
     currentTabItems: [],
     dashboards: [],
@@ -119,7 +123,12 @@ export const dashboardStore = defineStore({
               : 3,
         };
       }
-      if (type === "Trace" || type === "Profile" || type === "Log") {
+      if (
+        type === "Trace" ||
+        type === "Profile" ||
+        type === "Log" ||
+        type === "Ebpf"
+      ) {
         newItem.h = 36;
       }
       if (type === "Text") {
@@ -254,6 +263,12 @@ export const dashboardStore = defineStore({
     },
     setEntity(type: string) {
       this.entity = type;
+    },
+    setTraceTools(show: boolean) {
+      this.showTraceTools = show;
+    },
+    setLogTools(show: boolean) {
+      this.showLogTools = show;
     },
     setTopology(show: boolean) {
       this.showTopology = show;

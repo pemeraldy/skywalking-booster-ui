@@ -16,10 +16,11 @@ limitations under the License. -->
   <div ref="scrollWrapRef" class="scroll-snap-container">
     <div v-if="items.length > 1" class="scroll-handler__wrapper">
       <div
-        @click="scrollToGraph(item.i)"
-        v-for="item in items"
+        @click="scrollToGraph(item.i, index)"
+        v-for="(item, index) in items"
         :key="item.i"
-        :class="[currentItem === `item${item.i}` ? 'active' : '']"
+        :id="'scroll' + item.i"
+        :class="[currentItem === index ? 'active' : '']"
         class="full-scroll-to"
       ></div>
     </div>
@@ -31,15 +32,33 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts">
-import { ref, watch, onMounted, defineComponent } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, defineComponent } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRoute } from "vue-router";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import Configuration from "../views/dashboard/configuration";
 import controls from "../views/dashboard/controls/index";
+import { useRoute } from "vue-router";
+import connect from "../hooks/useIDE";
+
+let isScrolling = false;
+function scrollStop(callback: { (): void; (): void }, refresh = 66) {
+  let scrollListener: number;
+  window.addEventListener(
+    "scroll",
+    function (event) {
+      isScrolling = true;
+      window.clearTimeout(scrollListener);
+      scrollListener = window.setTimeout(callback, refresh);
+    },
+    true
+  );
+}
+scrollStop(function () {
+  isScrolling = false;
+});
 
 export default defineComponent({
-  name: "Dashboard",
+  name: "FullView",
   props: {
     items: {
       type: Array,
@@ -50,9 +69,10 @@ export default defineComponent({
   setup() {
     const dashboardStore = useDashboardStore();
     const { t } = useI18n();
-    const p = useRoute().params;
-    const currentItem = ref("");
+    const arrayOfItems = ref<Element[]>([]);
+    const currentItem = ref<number>(0);
     const scrollWrapRef = ref<any>(null);
+    const { path, query } = useRoute();
     watch(
       () => dashboardStore.layout,
       () => {
@@ -61,37 +81,94 @@ export default defineComponent({
         }, 500);
       }
     );
-    function scrollToGraph(e: any) {
-      document?.getElementById(`item${e}`)?.scrollIntoView();
+    function scrollToGraph(e: any, index: number) {
+      isScrolling = true;
+      let el = document.getElementById(`item${e}`);
+
+      if (el != null) {
+        el.scrollIntoView();
+        currentItem.value = index;
+      }
     }
     function observeItems() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((element) => {
           if (element.intersectionRatio > 0) {
-            currentItem.value = element.target.id;
+            // currentItem.value = element.target.id;
           }
         });
       });
-      document.querySelectorAll(".item").forEach((element) => {
+      document.querySelectorAll(".item").forEach((element, index) => {
+        arrayOfItems.value.push(element);
         observer.observe(element);
       });
-    } 
+    }
+    function scrollTo(index: number) {
+      let scrollIndex = arrayOfItems.value[index];
+      if (scrollIndex) {
+        let el = document.getElementById(`scroll${scrollIndex.id.substr(4)}`);
+        if (el != null) {
+          el.click();
+        }
+      }
+    }
+    function scrollUp() {
+      if (currentItem.value > 0) {
+        currentItem.value--;
+        scrollTo(currentItem.value);
+      }
+    }
+    function scrollDown() {
+      if (currentItem.value < arrayOfItems?.value?.length - 1) {
+        currentItem.value++;
+        scrollTo(currentItem.value);
+      } else if (currentItem.value === arrayOfItems?.value?.length - 1) {
+        currentItem.value = 0;
+        scrollTo(currentItem.value);
+      }
+    }
+    function wheelGraphScroll(e: WheelEvent) {
+      e.preventDefault();
+      if (!isScrolling) {
+        if (e.deltaY < 0) {
+          scrollUp();
+        } else {
+          scrollDown();
+        }
+      }
+    }
+    function keyGraphScroll(e: KeyboardEvent) {
+      if (e.keyCode == 38) {
+        e.preventDefault();
+        scrollUp();
+      } else if (e.keyCode === 40) {
+        e.preventDefault();
+        scrollDown();
+      }
+    }
     function initScroller() {
-      scrollWrapRef?.value?.addEventListener("scroll", (e: Event) => {
-        const isBottom =
-          scrollWrapRef?.value?.offsetHeight +
-            scrollWrapRef?.value?.scrollTop +
-            40 >
-          scrollWrapRef?.value?.scrollHeight;
-
-        if (isBottom) {
-          scrollWrapRef?.value.scroll(0, 0);
-        }        
-      });
+      //todo: smarter logic on when to add listeners
+      if (query["portal"] === "true" && path.endsWith("Activity")) {
+        console.log("Adding portal wheel/key listeners");
+        scrollWrapRef?.value?.addEventListener("wheel", wheelGraphScroll, {
+          passive: false,
+        });
+        document.addEventListener("keydown", keyGraphScroll, {
+          passive: false,
+        });
+      }
     }
     onMounted(() => {
       observeItems();
       initScroller();
+
+      if (query["portal"] === "true") {
+        connect();
+      }
+    });
+    onBeforeUnmount(() => {
+      scrollWrapRef?.value?.removeEventListener("wheel", wheelGraphScroll);
+      document.removeEventListener("keydown", keyGraphScroll);
     });
     return {
       t,
@@ -108,24 +185,22 @@ export default defineComponent({
 .scroll-snap-container {
   height: 90vh;
   display: block;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-points-y: repeat(100%);
-  scroll-snap-destination: 0 0;
-  scroll-snap-type: y mandatory;
-  scroll-snap-type: mandatory;
   scroll-behavior: smooth;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000;
+  overflow: hidden;
+
   .scroll-handler__wrapper {
     z-index: 20;
     position: fixed;
     display: flex;
     flex-direction: column;
     right: 0;
-    // top: 50%;
-    transform: translateY(60%);
+    top: 37vh;
     height: auto;
-    width: 20px;
+    width: 17px;
+
     .full-scroll-to {
       opacity: 0.5;
       width: 10px;
@@ -135,21 +210,24 @@ export default defineComponent({
       cursor: pointer;
       background: #4f4f4f;
     }
+
     .full-scroll-to.active {
       opacity: 1;
       padding: 6px;
-      background: #252a2f;
+      background: #1a1a1a;
     }
   }
 }
+
 .scroll-snap-container::-webkit-scrollbar {
   display: none;
 }
+
 .item {
-  scroll-snap-align: start;
+  // scroll-snap-align: start;
   height: 100%;
-  padding: 40px;
-  margin: 40px 0;
+  // padding: 40px;
+  // margin: 40px 0;
   // background: orange;
 }
 </style>

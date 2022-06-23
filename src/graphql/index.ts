@@ -25,6 +25,7 @@ import * as log from "./query/log";
 import * as profile from "./query/profile";
 import * as alarm from "./query/alarm";
 import * as event from "./query/event";
+import * as ebpf from "./query/ebpf";
 
 const query: { [key: string]: string } = {
   ...app,
@@ -36,6 +37,7 @@ const query: { [key: string]: string } = {
   ...profile,
   ...alarm,
   ...event,
+  ...ebpf,
 };
 class Graphql {
   private queryData = "";
@@ -46,16 +48,13 @@ class Graphql {
   public params(variablesData: unknown): AxiosPromise<void> {
     return axios
       .post(
-        "/graphql",
+        "/graphql/dashboard",
         {
           query: query[this.queryData],
           variables: variablesData,
         },
         {
           cancelToken: cancelToken(),
-          headers: {
-            Authorization: "Basic c2t5d2Fsa2luZzpza3l3YWxraW5n",
-          },
         }
       )
       .then((res: AxiosResponse) => {

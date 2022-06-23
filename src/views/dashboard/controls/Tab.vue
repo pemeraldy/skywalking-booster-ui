@@ -89,7 +89,7 @@ limitations under the License. -->
     >
       <div
         ref="tabObserveContainer"
-        class="scroll-snap-container"
+        class="scroll-tab-container"
         v-if="dashboardStore.fullView"
       >
         <div
@@ -97,10 +97,10 @@ limitations under the License. -->
           class="scroll-handler__wrapper"
         >
           <div
-            @click="scrollToGraph(item.i)"
-            v-for="item in dashboardStore.currentTabItems"
+            @click="scrollToGraph(item.i, index)"
+            v-for="(item, index) in dashboardStore.currentTabItems"
             :key="item.i"
-            :class="[currentItem === `tabitem${item.i}` ? 'active' : '']"
+            :class="[currentItem === index ? 'active' : '']"
             class="scroll-to"
           ></div>
         </div>
@@ -132,7 +132,7 @@ limitations under the License. -->
           :key="item.i"
           @click="clickTabGrid($event, item)"
           :class="{ active: activeTabWidget === item.i }"
-          drag-ignore-from="svg.d3-trace-tree, .dragger, .micro-topo-chart"
+          :drag-ignore-from="dragIgnoreFrom"
         >
           <component
             :is="item.type"
@@ -158,6 +158,8 @@ import Trace from "./Trace.vue";
 import Profile from "./Profile.vue";
 import Log from "./Log.vue";
 import Text from "./Text.vue";
+import Ebpf from "./Ebpf.vue";
+import { dragIgnoreFrom } from "../data";
 
 const props = {
   data: {
@@ -168,7 +170,7 @@ const props = {
 };
 export default defineComponent({
   name: "Tab",
-  components: { Topology, Widget, Trace, Profile, Log, Text },
+  components: { Topology, Widget, Trace, Profile, Log, Text, Ebpf },
   props,
   setup(props) {
     const { t } = useI18n();
@@ -181,8 +183,9 @@ export default defineComponent({
     const showTools = ref<boolean>(false);
     const tabRef = ref<any>("");
     const tabObserveContainer = ref<any>(null);
-    const currentItem = ref("");
-    
+    const arrayOfItems = ref<Element[]>([]);
+    const currentItem = ref<number>(0);
+    const isScrolling = ref(false);
 
     const l = dashboardStore.layout.findIndex((d: LayoutConfig) => d.i === props.data.i);
     if (dashboardStore.layout[l].children.length) {
@@ -194,8 +197,9 @@ export default defineComponent({
         observeItems();
       }, 1500);
     }
-    function scrollToGraph(e: any) {
+    function scrollToGraph(e: any, index: number) {
       document?.getElementById(`tabitem${e}`)?.scrollIntoView();
+      currentItem.value = index;
     }
 
     function observeItems(kill = false) {
@@ -203,12 +207,13 @@ export default defineComponent({
         entries.forEach((element) => {
           if (element.isIntersecting && element.intersectionRatio > 0) {
             setTimeout(() => {
-              currentItem.value = element.target.id;
+              // currentItem.value = element.target.id;
             }, 200);
           }
         });
       });
       document.querySelectorAll(".tabitem").forEach((element) => {
+        arrayOfItems.value.push(element);
         observer.observe(element);
       });
       if (kill) {
@@ -217,7 +222,32 @@ export default defineComponent({
         });
       }
     }
-
+    function scrollUp() {
+      if (currentItem.value > 0) {
+        currentItem.value--;
+        scrollTo(currentItem.value);
+      } else if (currentItem.value === 0) {
+        isScrolling.value = false;
+      }
+    }
+    function scrollDown() {
+      if (currentItem.value < arrayOfItems?.value?.length - 1) {
+        currentItem.value++;
+        scrollTo(currentItem.value);
+      } else if (currentItem.value === arrayOfItems?.value?.length - 1) {
+        isScrolling.value = true;
+        currentItem.value = 0;
+        scrollTo(currentItem.value);
+      }
+    }
+    function scrollTo(index: number) {
+      arrayOfItems.value[index]?.scrollIntoView();
+      if (isScrolling.value) {
+        setTimeout(() => {
+          isScrolling.value = false;
+        }, 800);
+      }
+    }
     watch(
       () => dashboardStore.currentTabItems,
       () => {
@@ -286,17 +316,16 @@ export default defineComponent({
         dashboardStore.layout[l].children[activeTabIndex.value].children
       );
     }
-    
-    function initScrollWatcher() {
-      tabObserveContainer?.value?.addEventListener("scroll", (e: Event) => {
-        const isBottom =
-          tabObserveContainer?.value?.offsetHeight +
-            tabObserveContainer?.value?.scrollTop +
-            70 >
-          tabObserveContainer?.value?.scrollHeight;
 
-        if (isBottom) {
-          tabObserveContainer?.value.scroll(0, 0);
+    function initScrollWatcher() {
+      tabObserveContainer?.value?.addEventListener("wheel", (e: WheelEvent) => {
+        if (isScrolling.value === false) {
+          isScrolling.value = true;
+          if (e.deltaY < 0) {
+            scrollUp();
+          } else {
+            scrollDown();
+          }
         }
       });
     }
@@ -345,6 +374,7 @@ export default defineComponent({
       canEditTabName,
       showTools,
       t,
+      dragIgnoreFrom,
     };
   },
 });
@@ -353,30 +383,27 @@ export default defineComponent({
 .tab-layout::-webkit-scrollbar {
   display: none !important;
 }
-.scroll-snap-container {
+.scroll-tab-container {
   position: relative;
   height: 80vh;
   display: block;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-points-y: repeat(100%);
-  scroll-snap-destination: 0 0;
-  scroll-snap-type: y mandatory;
-  scroll-snap-type: mandatory;
   scroll-behavior: smooth;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000;
+  overflow: hidden;
 }
-.scroll-snap-container::-webkit-scrollbar {
+.scroll-tab-container::-webkit-scrollbar {
   display: none;
 }
-.scroll-snap-container {
+.scroll-tab-container {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .tabitem {
   scroll-snap-align: start;
   height: 100%;
-  margin: 70px 0;
+  margin: 0 0;
 }
 .scroll-handler__wrapper {
   z-index: 20;
@@ -386,7 +413,7 @@ export default defineComponent({
   right: 0;
   top: 40vh;
   height: auto;
-  width: 20px;
+  width: 17px;
   .scroll-to {
     opacity: 0.5;
     width: 10px;
@@ -446,7 +473,9 @@ export default defineComponent({
     color: #409eff;
   }
 }
-
+.tab-header .tabs .span.active {
+  color: red !important;
+}
 .operations {
   color: #aaa;
   cursor: pointer;

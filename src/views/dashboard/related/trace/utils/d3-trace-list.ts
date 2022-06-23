@@ -40,8 +40,8 @@ export default class ListGraph {
   constructor(el: HTMLDivElement, handleSelectSpan: (i: Trace) => void) {
     this.handleSelectSpan = handleSelectSpan;
     this.el = el;
-    this.width = el.clientWidth - 10;
-    this.height = el.clientHeight;
+    this.width = el.getBoundingClientRect().width - 10;
+    this.height = el.getBoundingClientRect().height - 10;
     this.svg = d3
       .select(this.el)
       .append("svg")
@@ -173,7 +173,7 @@ export default class ListGraph {
       .attr("class", "node-text")
       .attr("x", 35)
       .attr("y", -6)
-      .attr("fill", "#333")
+      .attr("fill", "var(--spp-light-grey)")
       .text((d: any) => {
         if (d.data.label === "TRACE_ROOT") {
           return "";
@@ -187,7 +187,7 @@ export default class ListGraph {
       .attr("class", "node-text")
       .attr("x", 35)
       .attr("y", 12)
-      .attr("fill", "#ccc")
+      .attr("fill", "var(--spp-white)")
       .style("font-size", "11px")
       .text(
         (d: any) =>
@@ -271,8 +271,8 @@ export default class ListGraph {
       .enter()
       .insert("path", "g")
       .attr("class", "trace-link")
-      .attr("fill", "rgba(0,0,0,0)")
-      .attr("stroke", "rgba(0, 0, 0, 0.1)")
+      .attr("fill", "rgba(128,128,128,0)")
+      .attr("stroke", "rgba(128,128,128,0.1)")
       .attr("stroke-width", 2)
       .attr("transform", `translate(5, 0)`)
       .attr("d", () => {
@@ -306,8 +306,8 @@ export default class ListGraph {
     if (!this.el) {
       return;
     }
-    this.width = this.el.clientWidth - 20;
-    this.height = this.el.clientHeight;
+    this.width = this.el.getBoundingClientRect().width - 20;
+    this.height = this.el.getBoundingClientRect().height - 10;
     this.svg.attr("width", this.width).attr("height", this.height);
     this.svg.select("g").attr("transform", () => `translate(160, 0)`);
     const transform = d3.zoomTransform(this.svg).translate(0, 0);

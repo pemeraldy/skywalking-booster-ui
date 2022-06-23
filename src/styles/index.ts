@@ -14,6 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import "./grid.scss";
-@import "./lib.scss";
-@import "./reset.scss";
+import "element-plus/es/components/message/style/css";
+import "element-plus/es/components/message-box/style/css";
+import "element-plus/es/components/notification/style/css";
+import "./grid.scss";
+import "./lib.scss";
+import "./reset.scss";
+//import "./spp-light.scss";
+//import "./spp-dark.scss";
+import "./jetbrains-dark.scss";

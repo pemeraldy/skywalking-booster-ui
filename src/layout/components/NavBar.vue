@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <div class="nav-bar flex-h" :class="{ dark: theme === 'dark' }">
+  <div class="nav-bar flex-h" :class="{ dark: theme === 'dark' }" v-if="$route.query['portal'] !== 'true'">
     <div class="title">{{ appStore.pageTitle || t(pageName) }}</div>
     <div class="app-config">
       <span class="red" v-show="timeRange">{{ t("timeTips") }}</span>
