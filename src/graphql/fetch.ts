@@ -22,13 +22,10 @@ async function query(param: {
   conditions: { [key: string]: unknown };
 }) {
   const res: AxiosResponse = await axios.post(
-    "/graphql",
+    "/graphql/dashboard",
     { query: param.queryStr, variables: { ...param.conditions } },
     {
       cancelToken: cancelToken(),
-      headers: {
-        Authorization: "Basic c2t5d2Fsa2luZzpza3l3YWxraW5n",
-      },
     }
   );
   if (res.data.errors) {

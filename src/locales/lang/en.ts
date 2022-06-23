@@ -131,6 +131,11 @@ const msg = {
   metricLabel: "Metric Label",
   showUnit: "Show Unit",
   noGraph: "No Graph",
+  taskId: "Task ID",
+  triggerType: "Trigger Type",
+  targetType: "Target Type",
+  ebpfTip: "Don't have process could profiling",
+  processSelect: "Click to select processes",
   hourTip: "Select Hour",
   minuteTip: "Select Minute",
   secondTip: "Select Second",
@@ -237,6 +242,10 @@ const msg = {
   defaultDepth: "Default Depth",
   traceTagsTip: `Only tags defined in the core/default/searchableTracesTags are searchable.
   Check more details on the Configuration Vocabulary page`,
+  logTagsTip: `Only tags defined in the core/default/searchableLogsTags are searchable.
+  Check more details on the Configuration Vocabulary page`,
+  alarmTagsTip: `Only tags defined in the core/default/searchableAlarmTags are searchable.
+  Check more details on the Configuration Vocabulary page`,
   tagsLink: "Configuration Vocabulary page",
   addTag: "Please input a tag",
   log: "Log",
@@ -260,6 +269,7 @@ const msg = {
   contentType: "Content Type",
   content: "Content",
   viewLogs: "View Logs",
+  back: "Back",
   logsTagsTip: `Only tags defined in the core/default/searchableLogsTags are searchable.
   Check more details on the Configuration Vocabulary page`,
   keywordsOfContentLogTips:

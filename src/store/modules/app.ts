@@ -92,19 +92,17 @@ export const appStore = defineStore({
               this.duration.start.getMonth());
           break;
       }
-      const utcArr = this.utc.split(":");
-      const utcHour = isNaN(Number(utcArr[0])) ? 0 : Number(utcArr[0]);
-      const utcMin = isNaN(Number(utcArr[1])) ? 0 : Number(utcArr[1]);
       const utcSpace =
-        (utcHour + new Date().getTimezoneOffset() / 60) * 3600000 +
-        utcMin * 60000;
+        (this.utcHour + new Date().getTimezoneOffset() / 60) * 3600000 +
+        this.utcMin * 60000;
       const startUnix: number = this.duration.start.getTime();
       const endUnix: number = this.duration.end.getTime();
       const timeIntervals: string[] = [];
       for (let i = 0; i <= endUnix - startUnix; i += interval) {
         const temp: string = dateFormatTime(
           new Date(startUnix + i - utcSpace),
-          this.duration.step
+          this.duration.step,
+          false
         );
         timeIntervals.push(temp);
       }
@@ -164,6 +162,10 @@ export const appStore = defineStore({
         return res.data;
       }
       this.utc = res.data.data.getTimeInfo.timezone / 100 + ":0";
+
+      const utcArr = this.utc.split(":");
+      this.utcHour = isNaN(Number(utcArr[0])) ? 0 : Number(utcArr[0]);
+      this.utcMin = isNaN(Number(utcArr[1])) ? 0 : Number(utcArr[1]);
 
       return res.data;
     },

@@ -15,115 +15,182 @@ limitations under the License. -->
 <template>
   <div class="dashboard-tool flex-h">
     <div class="flex-h">
-      <div class="selectors-item" v-if="key !== 10">
-        <span class="label">$Service</span>
-        <Selector
-          v-model="states.currentService"
-          :options="selectorStore.services"
-          size="small"
-          placeholder="Select a service"
-          @change="changeService"
-          class="selectors"
-        />
+      <div class="flex-h">
+        <div
+          class="selectors-item"
+          v-if="key !== 10 && currentTraceView === 'traceList'"
+        >
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="Services"
+            placement="top-start"
+          >
+            <el-button
+              v-if="!selectedSelector.length || selectedSelector === '$service'"
+              @click="setSelectedSelector('$service')"
+              class="tool-btn"
+              size="small"
+            >
+              <Icon size="sm" iconName="playlist_add" />
+            </el-button>
+          </el-tooltip>
+          <Selector
+            v-if="selectedSelector === '$service'"
+            style="margin-left: 20px"
+            v-model="states.currentService"
+            :options="selectorStore.services"
+            size="small"
+            placeholder="Select a service"
+            @change="changeService"
+            class="selectors"
+          />
+          <el-button
+            style="margin-left: 4px"
+            v-if="selectedSelector === '$service'"
+            class="search-btn tool-btn"
+            size="small"
+            type="danger"
+            @click="closeSelector"
+          >
+            <Icon iconSize="sm" iconName="cancel" />
+          </el-button>
+        </div>
+        <div
+          class="selectors-item"
+          v-if="(key === 3 || key === 4) && currentTraceView === 'traceList'"
+        >
+          <el-tooltip
+            v-if="!selectedSelector.length || selectedSelector === '$endpoint'"
+            class="box-item"
+            effect="dark"
+            content="Endpoint"
+            placement="top-start"
+          >
+            <el-button
+              style="margin-left: 4px"
+              @click="setSelectedSelector('$endpoint')"
+              class="tool-btn"
+            >
+              <Icon size="sm" iconName="view" />
+            </el-button>
+          </el-tooltip>
+          <Selector
+            v-if="selectedSelector === '$endpoint'"
+            style="margin-left: 20px"
+            v-model="states.currentPod"
+            :options="selectorStore.pods"
+            size="small"
+            placeholder="Select a data"
+            @change="changePods"
+            @query="searchPods"
+            class="selectorPod"
+            :isRemote="
+              ['EndpointRelation', 'Endpoint'].includes(dashboardStore.entity)
+            "
+          />
+          <el-button
+            style="margin-left: 4px"
+            v-if="selectedSelector === '$endpoint'"
+            class="search-btn"
+            size="small"
+            type="danger"
+            @click="closeSelector"
+          >
+            <Icon iconSize="sm" iconName="cancel" />
+          </el-button>
+        </div>
+        <div class="selectors-item" v-if="key === 2 || key === 4">
+          <span class="label">$DestinationService</span>
+          <Selector
+            v-model="states.currentDestService"
+            :options="selectorStore.destServices"
+            size="small"
+            placeholder="Select a service"
+            @change="changeDestService"
+            class="selectors"
+          />
+        </div>
+        <div class="selectors-item" v-if="key === 4">
+          <span class="label">
+            {{
+              dashboardStore.entity === "EndpointRelation"
+                ? "$DestinationEndpoint"
+                : "$DestinationServiceInstance"
+            }}
+          </span>
+          <Selector
+            v-model="states.currentDestPod"
+            :options="selectorStore.destPods"
+            size="small"
+            placeholder="Select a data"
+            @change="changeDestPods"
+            class="selectorPod"
+            @query="searchDestPods"
+            :isRemote="dashboardStore.entity === 'EndpointRelation'"
+          />
+        </div>
       </div>
-      <div class="selectors-item" v-if="key === 3 || key === 4">
-        <span class="label">
-          {{
-            ["EndpointRelation", "Endpoint"].includes(dashboardStore.entity)
-              ? "$Endpoint"
-              : "$ServiceInstance"
-          }}
-        </span>
-        <Selector
-          v-model="states.currentPod"
-          :options="selectorStore.pods"
-          size="small"
-          placeholder="Select a data"
-          @change="changePods"
-          @query="searchPods"
-          class="selectorPod"
-          :isRemote="
-            ['EndpointRelation', 'Endpoint'].includes(dashboardStore.entity)
-          "
-        />
-      </div>
-      <div class="selectors-item" v-if="key === 2 || key === 4">
-        <span class="label">$DestinationService</span>
-        <Selector
-          v-model="states.currentDestService"
-          :options="selectorStore.destServices"
-          size="small"
-          placeholder="Select a service"
-          @change="changeDestService"
-          class="selectors"
-        />
-      </div>
-      <div class="selectors-item" v-if="key === 4">
-        <span class="label">
-          {{
-            dashboardStore.entity === "EndpointRelation"
-              ? "$DestinationEndpoint"
-              : "$DestinationServiceInstance"
-          }}
-        </span>
-        <Selector
-          v-model="states.currentDestPod"
-          :options="selectorStore.destPods"
-          size="small"
-          placeholder="Select a data"
-          @change="changeDestPods"
-          class="selectorPod"
-          @query="searchDestPods"
-          :isRemote="dashboardStore.entity === 'EndpointRelation'"
-        />
+      <div
+        class="flex-h tools"
+        v-loading="loading"
+        v-if="$route.query['portal'] !== 'true'"
+      >
+        <div class="tool-icons flex-h" v-if="dashboardStore.editMode">
+          <el-dropdown content="Controls" placement="bottom">
+            <i>
+              <Icon class="icon-btn" size="sm" iconName="control" />
+            </i>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  @click="clickIcons(t)"
+                  v-for="(t, index) in toolIcons"
+                  :key="index"
+                  :title="t.content"
+                >
+                  <Icon class="mr-5" size="middle" :iconName="t.name" />
+                  <span>{{ t.content }}</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-tooltip content="Apply" placement="bottom" effect="light">
+            <i @click="applyDashboard">
+              <Icon class="icon-btn" size="sm" iconName="save" />
+            </i>
+          </el-tooltip>
+        </div>
+        <div class="switch">
+          <el-switch
+            v-model="dashboardStore.editMode"
+            active-text="Edit"
+            inactive-text="View"
+            size="small"
+            inline-prompt
+            active-color="#409eff"
+            inactive-color="#999"
+            @change="changeMode"
+          />
+        </div>
       </div>
     </div>
-    <div class="flex-h tools" v-loading="loading">
-      <div class="tool-icons flex-h" v-if="dashboardStore.editMode">
-        <el-dropdown content="Controls" placement="bottom">
-          <i>
-            <Icon class="icon-btn" size="sm" iconName="control" />
-          </i>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item
-                @click="clickIcons(t)"
-                v-for="(t, index) in toolIcons"
-                :key="index"
-                :title="t.content"
-              >
-                <Icon class="mr-5" size="middle" :iconName="t.name" />
-                <span>{{ t.content }}</span>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-        <el-tooltip content="Apply" placement="bottom" effect="light">
-          <i @click="applyDashboard">
-            <Icon class="icon-btn" size="sm" iconName="save" />
-          </i>
-        </el-tooltip>
-      </div>      
-      <div class="switch">
-        <el-switch
-          v-model="dashboardStore.editMode"
-          active-text="Edit"
-          inactive-text="View"
-          size="small"
-          inline-prompt
-          active-color="#409eff"
-          inactive-color="#999"
-          @change="changeMode"
-        />
-      </div>
-    </div>
+    <Header v-if="showLogHeader" />
+    <TraceDetailsTools
+      v-if="showTraceHeader && currentTraceView === 'traceDetails'"
+    />
+    <Filter v-if="showTraceHeader && currentTraceView === 'traceList'" />
   </div>
 </template>
 <script lang="ts" setup>
+import Filter from "../related/trace/Filter.vue";
+import Header from "../related/log/Header.vue";
+
 import { reactive, ref, computed, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useAppStoreWithOut } from "@/store/modules/app";
+import { useTraceStore } from "@/store/modules/trace";
 import {
   EntityType,
   AllTools,
@@ -138,19 +205,20 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import { ElMessage } from "element-plus";
 import { Option } from "@/types/app";
 import { useI18n } from "vue-i18n";
-
+import TraceDetailsTools from "./component/TraceDetailsTools";
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const selectorStore = useSelectorStore();
 const appStore = useAppStoreWithOut();
+const traceStore = useTraceStore();
 const params = useRoute().params;
-const path = useRoute();
-const router = useRouter();
-if (!path.path.includes("fullview")) {
-  dashboardStore.setViewMode(false)
-}else{
-  dashboardStore.setViewMode(true)
-}
+const selectedSelector = ref<string>("");
+const showTraceHeader = computed(() => dashboardStore.showTraceTools);
+const showLogHeader = computed(() => dashboardStore.showLogTools);
+const currentTraceView = computed(() => traceStore.currentView);
+const { query } = useRoute();
+dashboardStore.setViewMode(query["fullview"] === "true");
+
 const toolIcons = ref<{ name: string; content: string; id: string }[]>(
   EndpointRelationTools
 );
@@ -179,6 +247,12 @@ const key = computed(() => {
   return (type && type.key) || 0;
 });
 
+function setSelectedSelector(selector: string) {
+  selectedSelector.value = selector;
+}
+function closeSelector() {
+  selectedSelector.value = "";
+}
 setCurrentDashboard();
 appStore.setEventStack([initSelector]);
 initSelector();
@@ -265,7 +339,7 @@ async function setSourceSelector() {
   let currentPod;
   if (states.currentPod) {
     currentPod = selectorStore.pods.find(
-      (d: { id: string }) => d.label === states.currentPod
+      (d: { label: string }) => d.label === states.currentPod
     );
   } else {
     currentPod = selectorStore.pods.find((d: { id: string }) => d.id === pod);
@@ -290,10 +364,10 @@ async function setDestSelector() {
     return;
   }
   const destPod = params.destPodId || selectorStore.destPods[0].id;
-  let currentDestPod = "";
+  let currentDestPod = { label: "" };
   if (states.currentDestPod) {
     currentDestPod = selectorStore.pods.find(
-      (d: { id: string }) => d.label === states.currentDestPod
+      (d: { label: string }) => d.label === states.currentDestPod
     );
   } else {
     currentDestPod = selectorStore.destPods.find(
@@ -324,19 +398,23 @@ async function getServices() {
   let s;
   if (states.currentService) {
     s = (selectorStore.services || []).find(
-      (d) => d.label === states.currentService
+      (d: { label: string }) => d.label === states.currentService
     );
   } else {
-    s = (selectorStore.services || []).find((d, index) => index === 0);
+    s = (selectorStore.services || []).find(
+      (d: unknown, index: number) => index === 0
+    );
   }
   selectorStore.setCurrentService(s || null);
   let d;
   if (states.currentService) {
     d = (selectorStore.services || []).find(
-      (d) => d.label === states.currentDestService
+      (d: { label: string }) => d.label === states.currentDestService
     );
   } else {
-    d = (selectorStore.services || []).find((d, index) => index === 1);
+    d = (selectorStore.services || []).find(
+      (d: unknown, index: number) => index === 1
+    );
   }
   selectorStore.setCurrentDestService(d || null);
   if (!selectorStore.currentService) {
@@ -361,6 +439,7 @@ async function getServices() {
 }
 
 async function changeService(service: any) {
+  selectedSelector.value = "";
   if (service[0]) {
     states.currentService = service[0].value;
     selectorStore.setCurrentService(service[0]);
@@ -380,6 +459,7 @@ function changeDestService(service: any) {
 }
 
 function changePods(pod: any) {
+  selectedSelector.value = "";
   if (pod[0]) {
     selectorStore.setCurrentPod(pod[0]);
   } else {
@@ -394,16 +474,7 @@ function changeDestPods(pod: any) {
     selectorStore.setCurrentDestPod(null);
   }
 }
-function toggleFullView(e) {
-  dashboardStore.setViewMode(e);
-  if (dashboardStore.fullView) {
-    const newPath = path.path.replace("dashboard", "fullview");
-    router.push(newPath);
-  } else {
-    const newPath = path.path.replace("fullview", "dashboard");
-    router.push(newPath);
-  }
-}
+
 function changeMode() {
   if (dashboardStore.editMode) {
     ElMessage.warning(t("editWarning"));
@@ -447,6 +518,9 @@ function setTabControls(id: string) {
     case "addProfile":
       dashboardStore.addTabControls("Profile");
       break;
+    case "addEbpf":
+      dashboardStore.addTabControls("Ebpf");
+      break;
     case "addTopology":
       dashboardStore.addTabControls("Topology");
       break;
@@ -472,6 +546,9 @@ function setControls(id: string) {
       break;
     case "addProfile":
       dashboardStore.addControl("Profile");
+      break;
+    case "addEbpf":
+      dashboardStore.addControl("Ebpf");
       break;
     case "addLog":
       dashboardStore.addControl("Log");
@@ -500,9 +577,13 @@ async function fetchPods(
       if (setPod) {
         let p;
         if (states.currentPod) {
-          p = selectorStore.pods.find((d) => d.label === states.currentPod);
+          p = selectorStore.pods.find(
+            (d: { label: unknown }) => d.label === states.currentPod
+          );
         } else {
-          p = selectorStore.pods.find((d, index) => index === 0);
+          p = selectorStore.pods.find(
+            (d: unknown, index: number) => index === 0
+          );
         }
         selectorStore.setCurrentPod(p || null);
         states.currentPod = selectorStore.currentPod.label;
@@ -513,9 +594,13 @@ async function fetchPods(
       if (setPod) {
         let p;
         if (states.currentPod) {
-          p = selectorStore.pods.find((d) => d.label === states.currentPod);
+          p = selectorStore.pods.find(
+            (d: { label: string }) => d.label === states.currentPod
+          );
         } else {
-          p = selectorStore.pods.find((d, index) => index === 0);
+          p = selectorStore.pods.find(
+            (d: { label: string }, index: number) => index === 0
+          );
         }
         selectorStore.setCurrentPod(p || null);
         states.currentPod = selectorStore.currentPod.label;
@@ -530,9 +615,13 @@ async function fetchPods(
       if (setPod) {
         let p;
         if (states.currentDestPod) {
-          p = selectorStore.pods.find((d) => d.label === states.currentDestPod);
+          p = selectorStore.pods.find(
+            (d: { label: string }) => d.label === states.currentDestPod
+          );
         } else {
-          p = selectorStore.pods.find((d, index) => index === 0);
+          p = selectorStore.pods.find(
+            (d: { label: string }, index: number) => index === 0
+          );
         }
         selectorStore.setCurrentDestPod(p || null);
         states.currentDestPod = selectorStore.currentDestPod.label;
@@ -546,9 +635,13 @@ async function fetchPods(
       if (setPod) {
         let p;
         if (states.currentDestPod) {
-          p = selectorStore.pods.find((d) => d.label === states.currentDestPod);
+          p = selectorStore.pods.find(
+            (d: { label: string }) => d.label === states.currentDestPod
+          );
         } else {
-          p = selectorStore.pods.find((d, index) => index === 0);
+          p = selectorStore.pods.find(
+            (d: { label: string }, index: number) => index === 0
+          );
         }
         selectorStore.setCurrentDestPod(p || null);
         states.currentDestPod = selectorStore.currentDestPod.label;
@@ -618,10 +711,12 @@ watch(
 <style lang="scss" scoped>
 .dashboard-tool {
   text-align: right;
-  padding: 3px 5px 5px 5px;
+  height: 35px;
+  padding: 0 5px 0 5px;
   background: rgb(240, 242, 245);
   border-bottom: 1px solid #dfe4e8;
   justify-content: space-between;
+  align-items: center;
 }
 
 .switch {
@@ -667,5 +762,12 @@ watch(
 
 .selectorPod {
   width: 300px;
+}
+
+.tool-btn {
+  height: 18px;
+}
+.el-input__wrapper {
+  height: 18px !important;
 }
 </style>
