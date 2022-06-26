@@ -22,10 +22,14 @@ async function query(param: {
   conditions: { [key: string]: unknown };
 }) {
   const res: AxiosResponse = await axios.post(
-    "/graphql/dashboard",
+    "/graphql",
     { query: param.queryStr, variables: { ...param.conditions } },
     {
       cancelToken: cancelToken(),
+      headers: {
+        Authorization:
+          "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJkZXZlbG9wZXJfaWQiOiJzeXN0ZW0iLCJjcmVhdGVkX2F0IjoxNjU2MjQ0OTI4NDA0LCJleHBpcmVzX2F0IjoxNjg3NzgwOTI4NDA0LCJpYXQiOjE2NTYyNDQ5Mjh9.VMyM2PHN6DeCsTPKSB2gidnaehdIh2u5gYaXcgNl6oyOEHaaYExSVbeKUfS_hXV3YBC0-d3KvKu9-fYe3xRxxiZqKhP7Jx7My5svIGyWM-Zn-zOkuc_3GQZgBR7XiM5RRa66989vr1EkzwYJbidtGTZrO5akYH7n6FSVyZL1NTIUH5mCTynzHZGIpO4HH6-WuSrAvrePcLIqDrAlBihe4_QBhzvx_Wvf8v3YkqxXV-ken_0WtQABLGtuhzTGNaoKXxTP93gNA9teHiEHHeIt-Nl-tazhTDSCopI3-eX_pbVwNwtegx-w36w7aGzjoqkx0Ggz9tPiZQVZel0O6i5zlrIj2ODK3ezA0rD7gLzaFM9a7JzwNLzDigKL_cB3kcokK9KuwooA1hBHZzKHr_QM47u8cpdw04J7QWHbZ5Z7GTdHIqnMGKrxWZYZvFEDGHzy6yLN42KFUXZT6CiLYWqGwEcIKtY6vT-DztCNIBoHgsom0miyhPzHicMBEfyhBH66AZNpfHNbN4pFTZLpuc7OGG3ZPyhRVruCK61lPARRg9SomyQoB9yhGBQw4R9XFA5YKAf8hFpO0mME3bGCERTEXbk0BIBkQWnKVksnGgYeyIIBh2zgS6RV-n8u08UywQgyHnlDRxDIYzj6DEhrTt7lmTj6mlq9cNiSfZ5t9Ap99tA",
+      },
     }
   );
   if (res.data.errors) {
