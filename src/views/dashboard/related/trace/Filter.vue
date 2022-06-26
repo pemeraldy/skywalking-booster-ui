@@ -13,118 +13,82 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
+  <div class="flex-h row">
+    <div class="mr-10" v-if="dashboardStore.entity === EntityType[1].value">
+      <span class="grey mr-5">{{ t("service") }}:</span>
+      <Selector
+        size="small"
+        :value="state.service.value"
+        :options="traceStore.services"
+        placeholder="Select a service"
+        @change="changeField('service', $event)"
+      />
+    </div>
+    <div class="mr-10" v-if="dashboardStore.entity !== EntityType[3].value">
+      <span class="grey mr-5">{{ t("instance") }}:</span>
+      <Selector
+        size="small"
+        :value="state.instance.value"
+        :options="traceStore.instances"
+        placeholder="Select a instance"
+        @change="changeField('instance', $event)"
+      />
+    </div>
+    <div class="mr-10" v-if="dashboardStore.entity !== EntityType[2].value">
+      <span class="grey mr-5">{{ t("endpoint") }}:</span>
+      <Selector
+        size="small"
+        :value="state.endpoint.value"
+        :options="traceStore.endpoints"
+        placeholder="Select a endpoint"
+        :isRemote="true"
+        @change="changeField('endpoint', $event)"
+        @query="searchEndpoints"
+      />
+    </div>
+    <div class="mr-10">
+      <span class="grey mr-5">{{ t("status") }}:</span>
+      <Selector
+        size="small"
+        :value="state.status.value"
+        :options="Status"
+        placeholder="Select a status"
+        @change="changeField('status', $event)"
+      />
+    </div>
+    <el-button
+      size="small"
+      type="primary"
+      @click="searchTraces"
+      class="search-btn"
+    >
+      {{ t("search") }}
+    </el-button>
+  </div>
+  <div class="flex-h row">
+    <div class="mr-10">
+      <span class="grey mr-5">{{ t("traceID") }}:</span>
+      <el-input size="small" v-model="traceId" class="traceId" />
+    </div>
+    <div class="mr-10">
+      <span class="sm b grey mr-5">{{ t("duration") }}:</span>
+      <el-input
+        size="small"
+        class="inputs mr-5"
+        v-model="minTraceDuration"
+        type="number"
+      />
+      <span class="grey mr-5">-</span>
+      <el-input
+        size="small"
+        class="inputs"
+        v-model="maxTraceDuration"
+        type="number"
+      />
+    </div>
+  </div>
   <div class="flex-h">
-    <div class="flex-h filter-container">
-      <div v-for="(filter, index) in arrayOfFilters" :key="index">
-        <el-tooltip
-          v-if="!activeFilter.length || activeFilter === filter.name"
-          class="box-item"
-          effect="dark"
-          :content="filter.description"
-          placement="bottom-start"
-        >
-          <el-button
-            type="success"
-            :class="[listOfActiveFilters.includes(filter.name) ? 'active-filter' : '']"
-            class="filter-btn mx-3"
-            @click="setFilter(filter.name)"
-          >
-            <Icon size="sm" :iconName="filter.iconName" />
-          </el-button>
-        </el-tooltip>
-      </div>
-    </div>
-    <div class="wrap-filters">
-      <div class="filter" v-if="activeFilter === 'service'">
-        <span class="grey mr-5">{{ t("service") }}:</span>
-        <Selector
-          size="small"
-          :value="state.service.value"
-          :options="traceStore.services"
-          placeholder="Select a service"
-          @change="changeField('service', $event)"
-        />
-      </div>
-      <div
-        class="filter"
-        v-if="
-          activeFilter === 'instance' && dashboardStore.entity !== EntityType[3].value
-        "
-      >
-        <span class="grey mr-5">{{ t("instance") }}:</span>
-        <Selector
-          size="small"
-          :value="state.instance.value"
-          :options="traceStore.instances"
-          placeholder="Select a instance"
-          @change="changeField('instance', $event)"
-        />
-      </div>
-      <div
-        class="filter"
-        v-if="
-          dashboardStore.entity !== EntityType[2].value && activeFilter === 'endpoints'
-        "
-      >
-        <span class="grey mr-5">{{ t("endpoint") }}:</span>
-        <Selector
-          size="small"
-          :value="state.endpoint.value"
-          :options="traceStore.endpoints"
-          placeholder="Select a endpoint"
-          :isRemote="true"
-          @change="changeField('endpoint', $event)"
-          @query="searchEndpoints"
-        />
-      </div>
-      <div v-if="activeFilter === 'status'" class="filter">
-        <span class="grey mr-5">{{ t("status") }}:</span>
-        <Selector
-          size="small"
-          :value="state.status.value"
-          :options="Status"
-          placeholder="Select a status"
-          @change="changeField('status', $event)"
-        />
-      </div>
-      <div v-if="activeFilter === 'traceId'" class="filter">
-        <span class="grey mr-5">{{ t("traceID") }}:</span>
-        <el-input size="small" v-model="traceId" class="traceId" />
-      </div>
-
-      <div v-if="activeFilter === 'duration'" class="filter">
-        <span class="sm b grey mr-5">{{ t("duration") }}:</span>
-        <el-input size="small" class="inputs mr-5" v-model="minTraceDuration" />
-        <span class="grey mr-5">-</span>
-        <el-input size="small" class="inputs" v-model="maxTraceDuration" />
-      </div>
-      <keep-alive>
-        <ConditionTags
-          v-if="activeFilter === 'tags'"
-          ref="traceTagsComponent"
-          :type="'TRACE'"
-          @update="updateTags"
-        />
-      </keep-alive>
-      <el-button
-        v-if="activeFilter"
-        class="search-btn filter-btn"
-        size="small"
-        type="primary"
-        @click="searchTraces"
-      >
-        <Icon iconSize="sm" iconName="search" />
-      </el-button>
-      <el-button
-        v-if="activeFilter"
-        class="search-btn filter-btn"
-        size="small"
-        type="danger"
-        @click="cancelSearch"
-      >
-        <Icon iconSize="sm" iconName="cancel" />
-      </el-button>
-    </div>
+    <ConditionTags :type="'TRACE'" @update="updateTags" />
   </div>
 </template>
 <script lang="ts" setup>
@@ -146,6 +110,10 @@ interface filtersObject {
   description: string;
 }
 
+/*global defineProps */
+const props = defineProps({
+  needQuery: { type: Boolean, default: true },
+});
 const { t } = useI18n();
 const appStore = useAppStoreWithOut();
 const selectorStore = useSelectorStore();
@@ -190,8 +158,8 @@ function setFilter(filter: string) {
 }
 
 const traceId = ref<string>("");
-const minTraceDuration = ref<string>("");
-const maxTraceDuration = ref<string>("");
+const minTraceDuration = ref<number>();
+const maxTraceDuration = ref<number>();
 const tagsList = ref<string[]>([]);
 const tagsMap = ref<Option[]>([]);
 const state = reactive<any>({
@@ -201,13 +169,12 @@ const state = reactive<any>({
   service: { value: "", label: "" },
 });
 
+if (props.needQuery) {
+  init();
+}
+
 const traceTagsComponent = ref<InstanceType<typeof ConditionTags> | null>(null);
 
-// const dateTime = computed(() => [
-//   appStore.durationRow.start,
-//   appStore.durationRow.end,
-// ]);
-init();
 async function init() {
   if (dashboardStore.entity === EntityType[1].value) {
     await getServices();
@@ -275,8 +242,8 @@ function cancelSearch() {
       state.service = { value: "", label: "" };
       break;
     case "duration":
-      minTraceDuration.value = "";
-      maxTraceDuration.value = "";
+      // minTraceDuration.value = "";
+      // maxTraceDuration.value = "";
       break;
     case "tags":
       tagsList.value = [];
@@ -355,11 +322,11 @@ function searchTraces() {
     serviceInstanceId: instance || state.instance.id || undefined,
     traceState: state.status.value || "ALL",
     queryDuration: appStore.durationTime,
-    minTraceDuration: minTraceDuration.value || undefined,
-    maxTraceDuration: maxTraceDuration.value || undefined,
+    minTraceDuration: Number(minTraceDuration.value),
+    maxTraceDuration: Number(maxTraceDuration.value),
     queryOrder: "BY_DURATION",
     tags: tagsMap.value.length ? tagsMap.value : undefined,
-    paging: { pageNum: 1, pageSize: 15, needTotal: true },
+    paging: { pageNum: 1, pageSize: 20 },
   });
   queryTraces();
 }
@@ -420,6 +387,7 @@ watch(
 
 .row {
   margin-bottom: 5px;
+  position: relative;
 }
 
 .traceId {
@@ -427,8 +395,11 @@ watch(
 }
 
 .search-btn {
-  margin-left: 20px;
   cursor: pointer;
+  width: 120px;
+  position: absolute;
+  top: 0;
+  right: 10px;
 }
 .filter-container {
   align-items: center;
