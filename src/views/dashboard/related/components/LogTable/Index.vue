@@ -15,18 +15,19 @@ limitations under the License. -->
 
 <template>
   <div class="log">
-    <div :class="{ 'd-flex': visibleColumns.length < 6 }" class="log-header"
+    <div
+      :class="[{ 'd-flex': visibleColumns.length < 6 }, "log-header" ]"
       :class="
-        type === 'browser' ? ['browser-header', 'flex-h'] : 'service-header'
+        
       "
     >
       <template v-for="(item, index) in columns" :key="`col${index}`">
         <template v-if="item.isVisible">
           <div
             :class="[
-            item.label,
-            ['message', 'stack'].includes(item.label) ? 'max-item' : '',
-          ]"
+              item.label,
+              ['message', 'stack'].includes(item.label) ? 'max-item' : '',
+            ]"
           >
             {{ t(item.value) }}
           </div>
@@ -158,9 +159,9 @@ function setCurrentLog(log: any) {
   width: 140px;
 }
 
-.d-flex{
+.d-flex {
   display: flex;
-  div{
+  div {
     flex-grow: 1;
   }
 }
