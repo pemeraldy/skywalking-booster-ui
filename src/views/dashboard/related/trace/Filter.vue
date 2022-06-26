@@ -275,7 +275,7 @@ function handleActiveFilterState() {
 
       break;
     case "duration":
-      if (!minTraceDuration.value.length || !maxTraceDuration.value.length) return;
+      if (!minTraceDuration?.value || !maxTraceDuration?.value) return;
       traceStore.setActiveFilter(activeFilter.value);
       addToActiveFilterList();
 
