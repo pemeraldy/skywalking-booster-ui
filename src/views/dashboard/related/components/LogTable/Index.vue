@@ -16,10 +16,11 @@ limitations under the License. -->
 <template>
   <div class="log">
     <div
-      :class="[{ 'd-flex': visibleColumns.length < 6 }, "log-header" ]"
-      :class="
-        
-      "
+      :class="[
+        { 'd-flex': visibleColumns.length < 6 },
+        'log-header',
+        type === 'browser' ? 'browser-header flex-h' : 'service-header',
+      ]"
     >
       <template v-for="(item, index) in columns" :key="`col${index}`">
         <template v-if="item.isVisible">
@@ -81,9 +82,7 @@ const useLogStore = logStore();
 const { t } = useI18n();
 const currentLog = ref<any>({});
 const showDetail = ref<boolean>(false);
-const columns: any[] =
-  props.type === "browser" ? BrowserLogConstants : ServiceLogConstants;
-const dragger = ref<Nullable<HTMLSpanElement>>(null);
+// const dragger = ref<Nullable<HTMLSpanElement>>(null);
 // const method = ref<number>(380);
 
 const columns = ref<any[]>(
