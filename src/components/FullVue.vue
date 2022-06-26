@@ -163,7 +163,7 @@ export default defineComponent({
       initScroller();
 
       if (query["portal"] === "true") {
-        connect();
+        connect(parseInt(window.location.port));
       }
     });
     onBeforeUnmount(() => {

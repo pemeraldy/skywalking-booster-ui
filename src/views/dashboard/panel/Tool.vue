@@ -58,7 +58,7 @@ limitations under the License. -->
         </div>
         <div
           class="selectors-item"
-          v-if="(key === 3 || key === 4) && currentTraceView === 'traceList'"
+          v-if="(key === 3 || key === 4) && currentTraceView === 'traceList' && $route.query['portal'] !== 'true'"
         >
           <el-tooltip
             v-if="!selectedSelector.length || selectedSelector === '$endpoint'"
