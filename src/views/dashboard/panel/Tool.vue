@@ -189,12 +189,6 @@ const key = computed(() => {
   return (type && type.key) || 0;
 });
 
-function setSelectedSelector(selector: string) {
-  selectedSelector.value = selector;
-}
-function closeSelector() {
-  selectedSelector.value = "";
-}
 setCurrentDashboard();
 appStore.setEventStack([initSelector]);
 initSelector();
