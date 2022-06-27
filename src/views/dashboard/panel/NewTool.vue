@@ -175,7 +175,7 @@ limitations under the License. -->
         </div>
       </div>
     </div>
-    <Header v-if="showLogHeader" />
+    <NewHeader v-if="showLogHeader" />
     <TraceDetailsTools
       v-if="showTraceHeader && currentTraceView === 'traceDetails'"
     />
@@ -184,7 +184,7 @@ limitations under the License. -->
 </template>
 <script lang="ts" setup>
 import Filter from "../related/trace/Filter.vue";
-import Header from "../related/log/Header.vue";
+import NewHeader from "../related/log/NewHeader.vue";
 
 import { reactive, ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
