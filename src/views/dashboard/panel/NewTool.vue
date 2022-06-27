@@ -179,11 +179,11 @@ limitations under the License. -->
     <TraceDetailsTools
       v-if="showTraceHeader && currentTraceView === 'traceDetails'"
     />
-    <Filter v-if="showTraceHeader && currentTraceView === 'traceList'" />
+    <JBFilter v-if="showTraceHeader && currentTraceView === 'traceList'" />
   </div>
 </template>
 <script lang="ts" setup>
-import Filter from "../related/trace/Filter.vue";
+import JBFilter from "../related/trace/JBFilter.vue";
 import NewHeader from "../related/log/NewHeader.vue";
 
 import { reactive, ref, computed, watch } from "vue";
