@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <Tool v-if="dashboardStore.currentDashboard" />
+  <NewTool v-if="dashboardStore.currentDashboard" />
   <div
     class="ds-main"
     v-if="dashboardStore.currentDashboard"
@@ -37,14 +37,14 @@ import { ref, defineComponent } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import GridLayout from "./panel/Layout.vue";
-import Tool from "./panel/Tool.vue";
+import NewTool from "./panel/NewTool.vue";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useAppStoreWithOut } from "@/store/modules/app";
 import Configuration from "./configuration";
 
 export default defineComponent({
   name: "Dashboard",
-  components: { ...Configuration, GridLayout, Tool },
+  components: { ...Configuration, GridLayout, NewTool },
   setup() {
     const dashboardStore = useDashboardStore();
     const appStore = useAppStoreWithOut();
