@@ -130,7 +130,7 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, reactive, watch, computed, onUnmounted } from "vue";
+import { ref, reactive, watch, computed, onUnmounted,onMounted } from "vue";
 import { ArrowDown, View, Hide } from "@element-plus/icons-vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";

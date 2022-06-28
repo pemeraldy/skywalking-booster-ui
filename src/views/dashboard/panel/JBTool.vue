@@ -175,7 +175,7 @@ limitations under the License. -->
         </div>
       </div>
     </div>
-    <NewHeader v-if="showLogHeader" />
+    <JBHeader v-if="showLogHeader" />
     <TraceDetailsTools
       v-if="showTraceHeader && currentTraceView === 'traceDetails'"
     />
@@ -184,7 +184,8 @@ limitations under the License. -->
 </template>
 <script lang="ts" setup>
 import JBFilter from "../related/trace/JBFilter.vue";
-import NewHeader from "../related/log/NewHeader.vue";
+import JBHeader from "../related/log/JBHeader.vue";
+import TraceDetailsTools from "./component/TraceDetailsTools.vue";
 
 import { reactive, ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
@@ -205,7 +206,6 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import { ElMessage } from "element-plus";
 import { Option } from "@/types/app";
 import { useI18n } from "vue-i18n";
-import TraceDetailsTools from "./component/TraceDetailsTools";
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const selectorStore = useSelectorStore();
