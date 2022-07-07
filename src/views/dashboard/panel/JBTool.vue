@@ -15,113 +15,170 @@ limitations under the License. -->
 <template>
   <div class="dashboard-tool flex-h">
     <div class="flex-h">
-      <div class="selectors-item" v-if="key !== 10">
-        <span class="label">$Service</span>
-        <Selector
-          v-model="states.currentService"
-          :options="selectorStore.services"
-          size="small"
-          placeholder="Select a service"
-          @change="changeService"
-          class="selectors"
-        />
+      <div class="flex-h">
+        <div
+          class="selectors-item"
+          v-if="key !== 10 && currentTraceView === 'traceList'"
+        >
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="Services"
+            placement="top-start"
+          >
+            <el-button
+              v-if="!selectedSelector.length || selectedSelector === '$service'"
+              @click="setSelectedSelector('$service')"
+              class="tool-btn"
+              size="small"
+            >
+              <Icon size="sm" iconName="playlist_add" />
+            </el-button>
+          </el-tooltip>
+          <Selector
+            v-if="selectedSelector === '$service'"
+            style="margin-left: 20px"
+            v-model="states.currentService"
+            :options="selectorStore.services"
+            size="small"
+            placeholder="Select a service"
+            @change="changeService"
+            class="selectors"
+          />
+          <el-button
+            style="margin-left: 4px"
+            v-if="selectedSelector === '$service'"
+            class="search-btn tool-btn"
+            size="small"
+            type="danger"
+            @click="closeSelector"
+          >
+            <Icon iconSize="sm" iconName="cancel" />
+          </el-button>
+        </div>
+        <div
+          class="selectors-item"
+          v-if="(key === 3 || key === 4) && currentTraceView === 'traceList'"
+        >
+          <el-tooltip
+            v-if="!selectedSelector.length || selectedSelector === '$endpoint'"
+            class="box-item"
+            effect="dark"
+            content="Endpoint"
+            placement="top-start"
+          >
+            <el-button
+              style="margin-left: 4px"
+              @click="setSelectedSelector('$endpoint')"
+              class="tool-btn"
+            >
+              <Icon size="sm" iconName="view" />
+            </el-button>
+          </el-tooltip>
+          <Selector
+            v-if="selectedSelector === '$endpoint'"
+            style="margin-left: 20px"
+            v-model="states.currentPod"
+            :options="selectorStore.pods"
+            size="small"
+            placeholder="Select a data"
+            @change="changePods"
+            @query="searchPods"
+            class="selectorPod"
+            :isRemote="
+              ['EndpointRelation', 'Endpoint'].includes(dashboardStore.entity)
+            "
+          />
+          <el-button
+            style="margin-left: 4px"
+            v-if="selectedSelector === '$endpoint'"
+            class="search-btn"
+            size="small"
+            type="danger"
+            @click="closeSelector"
+          >
+            <Icon iconSize="sm" iconName="cancel" />
+          </el-button>
+        </div>
+        <div class="selectors-item" v-if="key === 2 || key === 4">
+          <span class="label">$DestinationService</span>
+          <Selector
+            v-model="states.currentDestService"
+            :options="selectorStore.destServices"
+            size="small"
+            placeholder="Select a service"
+            @change="changeDestService"
+            class="selectors"
+          />
+        </div>
+        <div class="selectors-item" v-if="key === 4">
+          <span class="label">
+            {{
+              dashboardStore.entity === "EndpointRelation"
+                ? "$DestinationEndpoint"
+                : "$DestinationServiceInstance"
+            }}
+          </span>
+          <Selector
+            v-model="states.currentDestPod"
+            :options="selectorStore.destPods"
+            size="small"
+            placeholder="Select a data"
+            @change="changeDestPods"
+            class="selectorPod"
+            @query="searchDestPods"
+            :isRemote="dashboardStore.entity === 'EndpointRelation'"
+          />
+        </div>
       </div>
-      <div class="selectors-item" v-if="key === 3 || key === 4">
-        <span class="label">
-          {{
-            ["EndpointRelation", "Endpoint"].includes(dashboardStore.entity)
-              ? "$Endpoint"
-              : "$ServiceInstance"
-          }}
-        </span>
-        <Selector
-          v-model="states.currentPod"
-          :options="selectorStore.pods"
-          size="small"
-          placeholder="Select a data"
-          @change="changePods"
-          @query="searchPods"
-          class="selectorPod"
-          :isRemote="
-            ['EndpointRelation', 'Endpoint'].includes(dashboardStore.entity)
-          "
-        />
-      </div>
-      <div class="selectors-item" v-if="key === 2 || key === 4">
-        <span class="label">$DestinationService</span>
-        <Selector
-          v-model="states.currentDestService"
-          :options="selectorStore.destServices"
-          size="small"
-          placeholder="Select a service"
-          @change="changeDestService"
-          class="selectors"
-        />
-      </div>
-      <div class="selectors-item" v-if="key === 4">
-        <span class="label">
-          {{
-            dashboardStore.entity === "EndpointRelation"
-              ? "$DestinationEndpoint"
-              : "$DestinationServiceInstance"
-          }}
-        </span>
-        <Selector
-          v-model="states.currentDestPod"
-          :options="selectorStore.destPods"
-          size="small"
-          placeholder="Select a data"
-          @change="changeDestPods"
-          class="selectorPod"
-          @query="searchDestPods"
-          :isRemote="dashboardStore.entity === 'EndpointRelation'"
-        />
+      <div
+        class="flex-h tools"
+        v-loading="loading"
+        v-if="$route.query['portal'] !== 'true'"
+      >
+        <div class="tool-icons flex-h" v-if="dashboardStore.editMode">
+          <el-dropdown content="Controls" placement="bottom">
+            <i>
+              <Icon class="icon-btn" size="sm" iconName="control" />
+            </i>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  @click="clickIcons(t)"
+                  v-for="(t, index) in toolIcons"
+                  :key="index"
+                  :title="t.content"
+                >
+                  <Icon class="mr-5" size="middle" :iconName="t.name" />
+                  <span>{{ t.content }}</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-tooltip content="Apply" placement="bottom" effect="light">
+            <i @click="applyDashboard">
+              <Icon class="icon-btn" size="sm" iconName="save" />
+            </i>
+          </el-tooltip>
+        </div>
+        <div class="switch">
+          <el-switch
+            v-model="dashboardStore.editMode"
+            active-text="Edit"
+            inactive-text="View"
+            size="small"
+            inline-prompt
+            active-color="#409eff"
+            inactive-color="#999"
+            @change="changeMode"
+          />
+        </div>
       </div>
     </div>
-    <div class="flex-h tools" v-loading="loading" v-if="!appStore.isMobile">
-      <div class="tool-icons flex-h" v-if="dashboardStore.editMode">
-        <el-dropdown content="Controls" placement="bottom" :persistent="false">
-          <i>
-            <Icon class="icon-btn" size="sm" iconName="control" />
-          </i>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item
-                @click="clickIcons(t)"
-                v-for="(t, index) in toolIcons"
-                :key="index"
-                :title="t.content"
-              >
-                <Icon class="mr-5" size="middle" :iconName="t.name" />
-                <span>{{ t.content }}</span>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-        <el-tooltip content="Apply" placement="bottom" effect="light">
-          <i @click="applyDashboard">
-            <Icon class="icon-btn" size="sm" iconName="save" />
-          </i>
-        </el-tooltip>
-      </div>
-      <div class="switch">
-        <el-switch
-          v-model="dashboardStore.editMode"
-          active-text="Edit"
-          inactive-text="View"
-          size="small"
-          inline-prompt
-          active-color="#409eff"
-          inactive-color="#999"
-          @change="changeMode"
-        />
-      </div>
-    </div>
-    <!-- TODO: look into needQuery -->
     <JBLogHeader v-if="showLogHeader" />
-    <!-- <TraceDetailsTools
+    <TraceDetailsTools
       v-if="showTraceHeader && currentTraceView === 'traceDetails'"
-    /> -->
+    />
     <!-- <Filter v-if="showTraceHeader && currentTraceView === 'traceList'" /> -->
   </div>
 </template>
@@ -136,7 +193,8 @@ import { useRoute } from "vue-router";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useAppStoreWithOut } from "@/store/modules/app";
 import { useJbDashboardStore } from "@/store/modules/jbdashboard";
-// import { useTraceStore } from "@/store/modules/trace";
+import { useTraceStore } from "@/store/modules/trace";
+import { useJbTraceStore } from "@/store/modules/jbTraceStore";
 
 import {
   EntityType,
@@ -154,19 +212,20 @@ import { Option } from "@/types/app";
 import { useI18n } from "vue-i18n";
 
 onMounted(() => {
-    console.log('ready', showLogHeader);
-})
+  console.log("ready", showLogHeader);
+});
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const selectorStore = useSelectorStore();
 const appStore = useAppStoreWithOut();
 const jbDashboardStore = useJbDashboardStore();
+const jbTraceStore = useJbTraceStore();
 // const traceStore = useTraceStore();
 const params = useRoute().params;
 const selectedSelector = ref<string>("");
-// const showTraceHeader = computed(() => jbDashboardStore.showTraceTools);
+const showTraceHeader = computed(() => jbDashboardStore.showTraceTools);
 const showLogHeader = computed(() => jbDashboardStore.showLogTools);
-// const currentTraceView = computed(() => traceStore.currentView);
+const currentTraceView = computed(() => jbTraceStore.currentView);
 // const { query } = useRoute();
 // dashboardStore.setViewMode(query["fullview"] === "true");
 
@@ -198,12 +257,12 @@ const key = computed(() => {
   return (type && type.key) || 0;
 });
 
-// function setSelectedSelector(selector: string) {
-//   selectedSelector.value = selector;
-// }
-// function closeSelector() {
-//   selectedSelector.value = "";
-// }
+function setSelectedSelector(selector: string) {
+  selectedSelector.value = selector;
+}
+function closeSelector() {
+  selectedSelector.value = "";
+}
 setCurrentDashboard();
 appStore.setEventStack([initSelector]);
 initSelector();
