@@ -117,7 +117,8 @@ limitations under the License. -->
         />
       </div>
     </div>
-    <JBLogHeader v-if="showLogHeader" />
+    <!-- TODO: look into needQuery -->
+    <JBLogHeader v-if="showLogHeader" /> 
     <!-- <TraceDetailsTools
       v-if="showTraceHeader && currentTraceView === 'traceDetails'"
     /> -->
