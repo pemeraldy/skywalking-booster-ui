@@ -131,12 +131,13 @@ limitations under the License. -->
 import JBLogHeader from "../related/log/JBLogHeader.vue";
 // import TraceDetailsTools from "./component/TraceDetailsTools";
 
-import { reactive, ref, computed, watch } from "vue";
+import { reactive, ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useAppStoreWithOut } from "@/store/modules/app";
 import { useJbDashboardStore } from "@/store/modules/jbdashboard";
 // import { useTraceStore } from "@/store/modules/trace";
+
 import {
   EntityType,
   AllTools,
@@ -151,6 +152,10 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import { ElMessage } from "element-plus";
 import { Option } from "@/types/app";
 import { useI18n } from "vue-i18n";
+
+onMounted(() => {
+    console.log('ready', showLogHeader);
+})
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const selectorStore = useSelectorStore();

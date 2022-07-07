@@ -107,10 +107,10 @@ const dropdownTag = ref<Nullable<any>>(null);
 
 fetchTagKeys();
 
-defineExpose({
-  tagsList,
-  emptyTags
-})
+// defineExpose({
+//   tagsList,
+//   emptyTags
+// })
 
 function emptyTags (){
   tagsList.value = []

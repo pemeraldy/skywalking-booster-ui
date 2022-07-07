@@ -40,7 +40,7 @@ limitations under the License. -->
                 class="flex-h items-center"
                 @click="logStore.toggleAllColumns(false)"
               >
-                <el-icon><Hide /></el-icon>
+                <!-- <el-icon><Hide /></el-icon> -->
                 <span style="margin-right: 10px">Hide All</span>
               </div>
             </el-dropdown-item>
@@ -265,7 +265,7 @@ limitations under the License. -->
 </template>
 </template>
 <script lang="ts" setup>
-import { ArrowDown, View, Hide } from "@element-plus/icons-vue";
+import { ArrowDown, View } from "@element-plus/icons-vue";
 import { ref, reactive, watch, onUnmounted,computed, onMounted } from "vue";
 
 // New adds
@@ -274,7 +274,7 @@ import { useRoute } from "vue-router";
 
 import { useI18n } from "vue-i18n";
 import { Option } from "@/types/app";
-import { useLogStore } from "@/store/modules/log";
+import { useJbLogStore } from "@/store/modules/jbLog";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useAppStoreWithOut } from "@/store/modules/app";
 import { useSelectorStore } from "@/store/modules/selectors";
@@ -288,10 +288,27 @@ const props = defineProps({
   needQuery: { type: Boolean, default: true },
 });
 const { t } = useI18n();
+const { portal } = useRoute().query;
+const showColumList = ref<boolean>(false);
+const supportQueryLogsByKeywords = computed<boolean>(() => {
+  return logStore.supportQueryLogsByKeywords;
+});
+const supportExcludeQueryLogsByKeywords = computed<boolean>(() => {
+  return logStore.supportQueryLogsByKeywords;
+});
+
+const logTagsComponent = ref<InstanceType<typeof ConditionTags> | null>(null);
+interface filtersObject {
+  name: string;
+  iconName: string;
+  description: string;
+  isVisible?: boolean | unknown; // one of the situations is dependent on an api call
+}
+
 const appStore = useAppStoreWithOut();
 const selectorStore = useSelectorStore();
 const dashboardStore = useDashboardStore();
-const logStore = useLogStore();
+const logStore = useJbLogStore();
 const traceId = ref<string>("");
 const keywordsOfContent = ref<string[]>([]);
 const excludingKeywordsOfContent = ref<string[]>([]);
@@ -309,7 +326,149 @@ const state = reactive<any>({
 
 // New additions
 const currentSearchTerm = ref<string>("");
+const activeTerms = ref<string[]>([]);
+const arrayOfFilters = ref<filtersObject[]>([
+  {
+    name: "traceId",
+    iconName: "timeline",
+    description: "Trace ID",
+    isVisible: true,
+  },
+  {
+    name: "tags",
+    iconName: "epic",
+    description: "Tags",
+    isVisible: true,
+  },
+  {
+    name: "keywords",
+    iconName: "library_books",
+    description: "Keywords",
+    isVisible: supportQueryLogsByKeywords,
+  },
+  {
+    name: "exclude",
+    iconName: "issue-child",
+    description: "Exclude keywords",
+    isVisible: supportExcludeQueryLogsByKeywords,
+  },
+  {
+    name: "instance",
+    iconName: "epic",
+    description: "Instance",
+    isVisible: dashboardStore.entity !== EntityType[3].value,
+  },
+  {
+    name: "service",
+    iconName: "settings",
+    description: "Service",
+    isVisible: dashboardStore.entity === EntityType[1].value,
+  },
+  {
+    name: "endpoints",
+    iconName: "timeline",
+    description: "Endpoints",
+    isVisible: dashboardStore.entity !== EntityType[2].value,
+  },
+]);
 
+onMounted(() => {
+  if (portal) {
+    ["endpoint", "time", "contentType", "tags", "traceID"].forEach((col) =>
+      logStore.hideColumns(col)
+    );
+  }
+});
+
+function toggleColumSelector() {
+  showColumList.value = !showColumList.value;
+  setSearchTerm("column");
+}
+
+function hideTags() {
+  let tagsWrap = document.querySelector(".el-select__tags");
+  if (!tagsWrap) return;
+  // tagsWrap.style.display = "none";
+}
+function setSearchTerm(term: string) {
+  currentSearchTerm.value = term;
+  if (term === "column") {
+    setTimeout(() => {
+      hideTags();
+    }, 200);
+  }
+}
+function addToActiveTerms() {
+  activeTerms.value.push(currentSearchTerm.value);
+}
+function removeFromActiveTerms() {
+  activeTerms.value = activeTerms.value.filter(
+    (term) => term !== currentSearchTerm.value
+  );
+}
+
+function handleActiveSearchTerms() {
+  switch (currentSearchTerm.value) {
+    case "traceId":
+      if (!traceId.value.length) return;
+      addToActiveTerms();
+      break;
+    case "tags":
+      if (!tagsList.value.length) return;
+      addToActiveTerms();
+      break;
+    case "keywords":
+      if (!keywordsOfContent.value.length) return;
+      addToActiveTerms();
+      break;
+    case "exclude":
+      if (!excludingKeywordsOfContent.value.length) return;
+      addToActiveTerms();
+      break;
+    case "instance":
+      addToActiveTerms();
+      break;
+    case "service":
+      addToActiveTerms();
+      break;
+    case "endpoints":
+      addToActiveTerms();
+      break;
+  }
+}
+function cancelSearchTerm() {
+  switch (currentSearchTerm.value) {
+    case "traceId":
+      traceId.value = "";
+      break;
+    case "tags":
+      tagsList.value = [];
+      tagsMap.value = [];
+      // logTagsComponent.value?.emptyTags();
+      break;
+    case "keywords":
+      keywordsOfContent.value = [];
+      break;
+    case "exclude":
+      excludingKeywordsOfContent.value = [];
+      break;
+    case "instance":
+      state.instance = { value: "0", label: "All" };
+      break;
+    case "endpoints":
+      state.endpoint = { value: "0", label: "All" };
+      getEndpoints();
+      break;
+    case "service":
+      state.service = { value: "", label: "" };
+      break;
+  }
+  removeFromActiveTerms();
+  currentSearchTerm.value = "";
+  searchLogs();
+}
+
+// End of new additions
 if (props.needQuery) {
   init();
 }
