@@ -30,7 +30,7 @@ limitations under the License. -->
       </div>
     </el-popover>
     <div class="header">
-      <Header :needQuery="needQuery" />
+      <!-- <Header :needQuery="needQuery" /> -->
     </div>
     <div class="log">
       <List />
