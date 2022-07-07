@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { defineStore } from "pinia";
-import { store } from "@/store";
-
-interface DashboardState {
-  showTraceTools: boolean;
-  showLogTools: boolean;
-}
-
-export const jbDashboardStore = defineStore({
-  id: "jsDashboard",
-  state: (): DashboardState => ({
-    showLogTools: false,
-    showTraceTools: false,
-  }),
-  actions: {
-    setLogTools(show: boolean) {
-      this.showLogTools = show;
-    },
-    setTraceTools(show: boolean) {
-      this.showTraceTools = show;
-    },
-  },
-});
-
-export function useJbDashboardStore():any {
-    return jbDashboardStore(store)
-}
+ import { defineStore } from "pinia";
+ import { store } from "@/store";
+ interface JbDashboardState {   
+    showLogTools: boolean;
+    showTraceTools: boolean; 
+ }
+ 
+ export const jbDashboardStore = defineStore({
+   id: "jbdashboard",
+   state: (): JbDashboardState => ({
+     showLogTools: false,
+     showTraceTools: false
+   }),
+   actions: {       
+     setLogTools(show: boolean) {
+       this.showLogTools = show;
+     },
+     setTraceTools(show: boolean) {
+       this.showTraceTools = show;
+     },
+     
+   },
+ });
+ 
+ export function useJbDashboardStore(): any {
+   return jbDashboardStore(store);
+ }
+ 

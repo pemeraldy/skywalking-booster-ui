@@ -38,10 +38,13 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts" setup>
+import { onBeforeUnmount, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/store/modules/dashboard";
+import { useJbDashboardStore } from "@/store/modules/jbdashboard";
 // import Header from "../related/log/Header.vue";
 import List from "../related/log/List.vue";
+import { use } from "echarts/core";
 
 /*global defineProps */
 const props = defineProps({
@@ -55,9 +58,18 @@ const props = defineProps({
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 
+
 function removeWidget() {
   dashboardStore.removeControls(props.data);
 }
+
+onMounted(() => {
+  useJbDashboardStore().setLogTools(true)
+})
+onBeforeUnmount(() => {
+  useJbDashboardStore().setLogTools(false)
+})
+
 </script>
 <style lang="scss" scoped>
 .log-wrapper {

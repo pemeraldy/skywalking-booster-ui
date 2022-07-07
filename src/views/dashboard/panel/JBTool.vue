@@ -135,6 +135,7 @@ import { reactive, ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useAppStoreWithOut } from "@/store/modules/app";
+import { useJbDashboardStore } from "@/store/modules/jbdashboard";
 // import { useTraceStore } from "@/store/modules/trace";
 import {
   EntityType,
@@ -154,11 +155,12 @@ const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const selectorStore = useSelectorStore();
 const appStore = useAppStoreWithOut();
+const jbDashboardStore = useJbDashboardStore();
 // const traceStore = useTraceStore();
 const params = useRoute().params;
 const selectedSelector = ref<string>("");
-// const showTraceHeader = computed(() => dashboardStore.showTraceTools);
-const showLogHeader = computed(() => dashboardStore.showLogTools);
+// const showTraceHeader = computed(() => jbDashboardStore.showTraceTools);
+const showLogHeader = computed(() => jbDashboardStore.showLogTools);
 // const currentTraceView = computed(() => traceStore.currentView);
 // const { query } = useRoute();
 // dashboardStore.setViewMode(query["fullview"] === "true");
