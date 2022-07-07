@@ -20,3 +20,4 @@ import "element-plus/es/components/notification/style/css";
 import "./grid.scss";
 import "./lib.scss";
 import "./reset.scss";
+import "./jetbrains-dark.scss";
