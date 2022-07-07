@@ -117,7 +117,7 @@ limitations under the License. -->
         />
       </div>
     </div>
-    <Header v-if="showLogHeader" />
+    <JBLogHeader v-if="showLogHeader" />
     <!-- <TraceDetailsTools
       v-if="showTraceHeader && currentTraceView === 'traceDetails'"
     /> -->
@@ -126,7 +126,8 @@ limitations under the License. -->
 </template>
 <script lang="ts" setup>
 // import Filter from "../related/trace/Filter.vue";
-import Header from "../related/log/Header.vue";
+// import Header from "../related/log/Header.vue";
+import JBLogHeader from "../related/log/JBLogHeader.vue";
 // import TraceDetailsTools from "./component/TraceDetailsTools";
 
 import { reactive, ref, computed, watch } from "vue";
