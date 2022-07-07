@@ -16,13 +16,14 @@
  */
 
 import { defineStore } from "pinia";
+import { store } from "@/store";
 
 interface DashboardState {
   showTraceTools: boolean;
   showLogTools: boolean;
 }
 
-export const dashboardStore = defineStore({
+export const jbDashboardStore = defineStore({
   id: "jsDashboard",
   state: (): DashboardState => ({
     showLogTools: false,
@@ -37,3 +38,7 @@ export const dashboardStore = defineStore({
     },
   },
 });
+
+export function useJbDashboardStore():any {
+    return jbDashboardStore(store)
+}
