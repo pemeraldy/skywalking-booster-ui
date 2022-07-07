@@ -107,6 +107,15 @@ const dropdownTag = ref<Nullable<any>>(null);
 
 fetchTagKeys();
 
+defineExpose({
+  tagsList,
+  emptyTags
+})
+
+function emptyTags (){
+  tagsList.value = []
+}
+
 function removeTags(index: number) {
   tagsList.value.splice(index, 1);
   updateTags();
