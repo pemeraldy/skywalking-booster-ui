@@ -12,9 +12,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
+
 <template>
-  <template>
-<div class="flex-h log-wrapper">
+  <div class="flex-h log-wrapper">
     <div v-if="currentSearchTerm === 'column'" class="flex-h items-center mr-5">
       <el-dropdown class="dark" :hide-on-click="false">
         <span class="cursor-pointer">
@@ -263,14 +263,13 @@ limitations under the License. -->
     </div>
   </div>
 </template>
-</template>
+
 <script lang="ts" setup>
 import { ArrowDown, View } from "@element-plus/icons-vue";
-import { ref, reactive, watch, onUnmounted,computed, onMounted } from "vue";
+import { ref, reactive, watch, onUnmounted, computed, onMounted } from "vue";
 
 // New adds
 import { useRoute } from "vue-router";
-
 
 import { useI18n } from "vue-i18n";
 import { Option } from "@/types/app";
