@@ -159,6 +159,7 @@ const appStore = useAppStoreWithOut();
 const selectorStore = useSelectorStore();
 const dashboardStore = useDashboardStore();
 const traceStore = useTraceStore();
+const activeFilter = ref<string>("");
 const listOfActiveFilters = ref<string[]>([]);
 const arrayOfFilters = ref<filtersObject[]>([
   {
@@ -197,10 +198,10 @@ const arrayOfFilters = ref<filtersObject[]>([
     description: "Endpoints",
   },
 ]);
-const activeFilter = ref<string>("");
-// function setFilter(filter: string) {
-//   activeFilter.value = filter;
-// }
+
+function setFilter(filter: string) {
+  activeFilter.value = filter;
+}
 
 const traceId = ref<string>("");
 const minTraceDuration = ref<number>();
@@ -213,6 +214,8 @@ const state = reactive<any>({
   endpoint: { value: "0", label: "All" },
   service: { value: "", label: "" },
 });
+
+const traceTagsComponent = ref<InstanceType<typeof ConditionTags> | null>(null);
 
 if (props.needQuery) {
   init();
@@ -270,39 +273,39 @@ function removeFromActiveFilters() {
     (filter) => filter !== activeFilter.value
   );
 }
-// function cancelSearch() {
-//   switch (activeFilter.value) {
-//     case "status":
-//       state.status = { label: "All", value: "ALL" };
-//       break;
-//     case "instance":
-//       state.instance = { value: "0", label: "All" };
-//       break;
-//     case "endpoints":
-//       state.endpoint = { value: "0", label: "All" };
-//       break;
-//     case "service":
-//       state.service = { value: "", label: "" };
-//       break;
-//     case "duration":
-//       minTraceDuration.value = 0;
-//       maxTraceDuration.value = 0;
-//       break;
-//     case "tags":
-//       tagsList.value = [];
-//       tagsMap.value = [];
-//       updateTags({ tagsMap: [], tagsList: [] });
-//       traceTagsComponent.value?.emptyTags();
-//       break;
-//     case "traceId":
-//       traceId.value = "";
-//       break;
-//   }
-//   removeFromActiveFilters();
-//   activeFilter.value = "";
-//   traceStore.activeFilter = "";
-//   searchTraces();
-// }
+function cancelSearch() {
+  switch (activeFilter.value) {
+    case "status":
+      state.status = { label: "All", value: "ALL" };
+      break;
+    case "instance":
+      state.instance = { value: "0", label: "All" };
+      break;
+    case "endpoints":
+      state.endpoint = { value: "0", label: "All" };
+      break;
+    case "service":
+      state.service = { value: "", label: "" };
+      break;
+    case "duration":
+      minTraceDuration.value = 0;
+      maxTraceDuration.value = 0;
+      break;
+    case "tags":
+      tagsList.value = [];
+      tagsMap.value = [];
+      updateTags({ tagsMap: [], tagsList: [] });
+      traceTagsComponent.value?.emptyTags();
+      break;
+    case "traceId":
+      traceId.value = "";
+      break;
+  }
+  removeFromActiveFilters();
+  activeFilter.value = "";
+  traceStore.activeFilter = "";
+  searchTraces();
+}
 function handleActiveFilterState() {
   switch (activeFilter.value) {
     case "traceId":

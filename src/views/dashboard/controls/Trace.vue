@@ -42,7 +42,7 @@ limitations under the License. -->
 import type { PropType } from "vue";
 import { computed, onMounted, onBeforeUnmount } from "vue";
 import TraceList from "../related/trace/TraceList.vue";
-import TraceDetail from "../related/trace/Detail.vue";
+import TraceDetail from "../related/trace/JbTraceDetail.vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useTraceStore } from "@/store/modules/trace";

@@ -53,7 +53,9 @@
             v-model:currentPage="pageNum"
             v-model:page-size="pageSize"
             :small="true"
-            :total="traceStore.traceSpanLogsTotal"
+            layout="prev, pager, next"
+            :pager-count="5"
+            :total="total"
             @current-change="turnLogsPage"
           />
           <LogTable
@@ -165,6 +167,16 @@
     </div>
   </div>
   <div class="no-data" v-else>t("noData")</div>
+  <div class="trace-chart">
+    <component
+      v-if="traceStore.currentTrace.endpointNames"
+      :is="displayMode"
+      :data="traceStore.traceSpans"
+      :traceId="traceStore.currentTrace.traceIds[0].value"
+      :showBtnDetail="false"
+      HeaderType="trace"
+    />
+  </div>
 </template>
 
 <script lang="ts">
@@ -182,7 +194,7 @@ export default defineComponent({
   components: {
     LogTable,
   },
-  setup(props, ctx) {
+  setup() {
     const { t } = useI18n();
     const traceStore = useTraceStore();
     const loading = ref<boolean>(false);
@@ -192,6 +204,11 @@ export default defineComponent({
     });
     const pageNum = ref<number>(1);
     const pageSize = 10;
+    const total = computed(() =>
+      traceStore.traceList.length === pageSize
+        ? pageSize * pageNum.value + 1
+        : pageSize * pageNum.value
+    );
     const dateFormat = (date: number, pattern = "YYYY-MM-DD HH:mm:ss") =>
       dayjs(date).format(pattern);
     const showTraceLogs = ref<boolean>(false);
@@ -228,7 +245,7 @@ export default defineComponent({
           relatedTrace: {
             traceId: traceId.value || traceStore.currentTrace.traceIds[0].value,
           },
-          paging: { pageNum: pageNum.value, pageSize, needTotal: true },
+          paging: { pageNum: pageNum.value, pageSize },
         },
       });
       if (res.errors) {
@@ -255,6 +272,7 @@ export default defineComponent({
       pageSize,
       pageNum,
       loading,
+      total,
     };
   },
 });
@@ -272,6 +290,7 @@ export default defineComponent({
   overflow: auto;
   padding-bottom: 20px;
 }
+
 .trace-chart.full-view {
   height: calc(100% - 1px) !important;
 }
@@ -325,13 +344,16 @@ export default defineComponent({
   width: 100%;
   text-align: center;
 }
+
 .vm {
   margin-right: 4px;
 }
+
 .filter-btn {
   height: 18px;
   margin: 0 5px;
 }
+
 .copy-btn {
   height: 18px;
   width: 10px;

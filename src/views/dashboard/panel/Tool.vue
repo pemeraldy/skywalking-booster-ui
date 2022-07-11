@@ -230,7 +230,7 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts" setup>
-import Filter from "../related/trace/Filter.vue";
+import Filter from "../related/trace/JbFilter.vue";
 import Header from "../related/log/Header.vue";
 
 import { reactive, ref, computed, watch } from "vue";
@@ -837,6 +837,7 @@ watch(
 .tool-btn {
   height: 18px;
 }
+
 .el-input__wrapper {
   height: 18px !important;
 }
