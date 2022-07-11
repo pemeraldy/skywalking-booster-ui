@@ -112,6 +112,24 @@ import Icon from "@/components/Icon.vue";
 import { useAppStoreWithOut } from "@/store/modules/app";
 
 const appStore = useAppStoreWithOut();
+
+const { query } = useRoute();
+
+// eslint-disable-next-line no-undef
+let portalStyle = reactive({});
+if (query["portal"] === "true") {
+  // eslint-disable-next-line no-undef
+  portalStyle = reactive({
+    "min-height": "unset",
+    "overflow-y": "scroll",
+    "overflow-x": "hidden",
+  });
+}
+
+const isPortalView = computed(() => {
+  return query["portal"] === "true";
+});
+
 const { t } = useI18n();
 const name = ref<string>(String(useRouter().currentRoute.value.name));
 const theme = ["VirtualMachine", "Kubernetes"].includes(name.value || "")
