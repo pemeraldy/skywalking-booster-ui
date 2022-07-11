@@ -21,33 +21,6 @@ limitations under the License. -->
     </router-view>
   </section>
 </template>
-<script lang="ts" setup>
-import { ElMessage } from "element-plus";
-import { useAppStoreWithOut } from "@/store/modules/app";
-import { useRoute } from "vue-router";
-
-const { query } = useRoute();
-
-// eslint-disable-next-line no-undef
-let portalStyle = reactive({});
-if (query["portal"] === "true") {
-  // eslint-disable-next-line no-undef
-  portalStyle = reactive({
-    height: "100%",
-    "max-height": "350px",
-    "max-width": "963px",
-  });
-}
-
-const appStore = useAppStoreWithOut();
-if (!appStore.utc) {
-  const res = appStore.queryOAPTimeInfo();
-
-  if (res.errors) {
-    ElMessage.error(res.errors);
-  }
-}
-</script>
 <style lang="scss" scoped>
 .app-main {
   height: calc(100% - 39px);

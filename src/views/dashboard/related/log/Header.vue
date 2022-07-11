@@ -56,44 +56,67 @@ limitations under the License. -->
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <el-button class="toggle-btn mx-3danger" @click="setSearchTerm('')">
+      <el-button class="toggle-btn mx-3danger" >
         <Icon iconSize="sm" iconName="cancel" />
       </el-button>
     </div>
-    <div v-if="!currentSearchTerm.length" class="flex-h items-center">
-      <div v-for="(item, index) in arrayOfFilters" :key="index">
-        <el-tooltip
-          class="box-item"
-          effect="dark"
-          :content="item.description"
-          placement="bottom-start"
+    <div class="mr-5" v-if="dashboardStore.entity !== EntityType[2].value">
+      <span class="grey mr-5">
+        {{ isBrowser ? t("page") : t("endpoint") }}:
+      </span>
+      <Selector
+        size="small"
+        :value="state.endpoint.value"
+        :options="logStore.endpoints"
+        placeholder="Select a endpoint"
+        @change="changeField('endpoint', $event)"
+        :isRemote="true"
+        @query="searchEndpoints"
+      />
+    </div>
+    <div class="mr-5" v-if="isBrowser">
+      <span class="grey mr-5"> {{ t("category") }}: </span>
+      <Selector
+        size="small"
+        :value="state.category.value"
+        :options="ErrorCategory"
+        placeholder="Select a category"
+        @change="changeField('category', $event)"
+      />
+    </div>
+    <el-button
+      class="search-btn"
+      size="small"
+      type="primary"
+      @click="searchLogs"
+    >
+      {{ t("search") }}
+    </el-button>
+  </div>
+  <div class="flex-h row" v-show="!isBrowser">
+    <div class="mr-5 traceId">
+      <span class="grey mr-5">{{ t("traceID") }}:</span>
+      <el-input v-model="traceId" class="inputs-max" size="small" />
+    </div>
+    <ConditionTags :type="'LOG'" @update="updateTags" />
+  </div>
+  <div class="row tips" v-show="!isBrowser">
+    <b>{{ t("conditionNotice") }}</b>
+  </div>
+  <div class="flex-h" v-show="!isBrowser">
+    <div class="mr-5" v-show="logStore.supportQueryLogsByKeywords">
+      <span class="mr-5 grey">{{ t("keywordsOfContent") }}:</span>
+      <span class="log-tags">
+        <span
+          class="selected"
+          v-for="(item, index) in keywordsOfContent"
+          :key="`keywordsOfContent${index}`"
         >
-          <el-button
-            type="success"
-            :class="[activeTerms.includes(item.name) ? 'active-toggle' : '']"
-            class="toggle-btn mx-3"
-            v-show="item.isVisible"
-            @click="setSearchTerm(item.name)"
-          >
-            <Icon iconSize="sm" :iconName="item.iconName" />
-          </el-button>
-        </el-tooltip>
-      </div>
-      <el-tooltip
-        class="box-item"
-        effect="dark"
-        content="Toggle columns"
-        placement="bottom-start"
-      >
-        <el-button
-          type="success"
-          :class="[false ? 'active-toggle' : '']"
-          class="toggle-btn mx-3"
-          @click="toggleColumSelector"
-        >
-          <Icon iconSize="sm" iconName="epic" />
+        </span>
+        </span>
+          <!-- <Icon iconSize="sm" iconName="epic" />
         </el-button>
-      </el-tooltip>
+      </el-tooltip> -->
     </div>
 
     <div class="flex-h items-center">
@@ -253,8 +276,7 @@ limitations under the License. -->
         <el-button
           class="search-btn toggle-btn"
           size="small"
-          type="primary"
-          @click="cancelSearchTerm"
+          type="primary"          
         >
           <Icon iconSize="sm" iconName="cancel" />
         </el-button>
@@ -263,9 +285,7 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts" setup>
-import { ArrowDown, View, Hide } from "@element-plus/icons-vue";
-import { ref, reactive, watch, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, reactive, watch, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { Option } from "@/types/app";
 import { useLogStore } from "@/store/modules/log";
@@ -275,14 +295,19 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import ConditionTags from "@/views/components/ConditionTags.vue";
 import { ElMessage } from "element-plus";
 import { EntityType } from "../../data";
+import { ErrorCategory } from "./data";
 
+/*global defineProps */
+const props = defineProps({
+  needQuery: { type: Boolean, default: true },
+});
 const { t } = useI18n();
 const appStore = useAppStoreWithOut();
 const selectorStore = useSelectorStore();
 const dashboardStore = useDashboardStore();
-const { portal } = useRoute().query;
+// const { portal } = useRoute().query;
 const logStore = useLogStore();
-const showColumList = ref<boolean>(false);
+// const showColumList = ref<boolean>(false);
 const traceId = ref<string>("");
 const keywordsOfContent = ref<string[]>([]);
 const excludingKeywordsOfContent = ref<string[]>([]);
@@ -304,75 +329,10 @@ const state = reactive<any>({
   instance: { value: "0", label: "All" },
   endpoint: { value: "0", label: "All" },
   service: { value: "", label: "" },
+  category: { value: "ALL", label: "All" },
 });
-const logTagsComponent = ref<InstanceType<typeof ConditionTags> | null>(null);
-interface filtersObject {
-  name: string;
-  iconName: string;
-  description: string;
-  isVisible?: boolean | unknown; // one of the situations is dependent on an api call
-}
-const arrayOfFilters = ref<filtersObject[]>([
-  {
-    name: "traceId",
-    iconName: "timeline",
-    description: "Trace ID",
-    isVisible: true,
-  },
-  {
-    name: "tags",
-    iconName: "epic",
-    description: "Tags",
-    isVisible: true,
-  },
-  {
-    name: "keywords",
-    iconName: "library_books",
-    description: "Keywords",
-    isVisible: supportQueryLogsByKeywords,
-  },
-  {
-    name: "exclude",
-    iconName: "issue-child",
-    description: "Exclude keywords",
-    isVisible: supportExcludeQueryLogsByKeywords,
-  },
-  {
-    name: "instance",
-    iconName: "epic",
-    description: "Instance",
-    isVisible: dashboardStore.entity !== EntityType[3].value,
-  },
-  {
-    name: "service",
-    iconName: "settings",
-    description: "Service",
-    isVisible: dashboardStore.entity === EntityType[1].value,
-  },
-  {
-    name: "endpoints",
-    iconName: "timeline",
-    description: "Endpoints",
-    isVisible: dashboardStore.entity !== EntityType[2].value,
-  },
-]);
-onMounted(() => {
-  if (portal) {
-    ["endpoint", "time", "contentType", "tags", "traceID"].forEach((col) =>
-      logStore.hideColumns(col)
-    );
-  }
-});
-init();
-function toggleColumSelector() {
-  showColumList.value = !showColumList.value;
-  setSearchTerm("column");
-}
-
-function hideTags() {
-  let tagsWrap = document.querySelector(".el-select__tags");
-  if (!tagsWrap) return;
-  tagsWrap.style.display = "none";
+if (props.needQuery) {
+  init();
 }
 async function init() {
   const resp = await logStore.getLogsByKeywords();
@@ -481,19 +441,32 @@ function searchLogs() {
   if (dashboardStore.entity === EntityType[3].value) {
     instance = selectorStore.currentPod.id;
   }
-  logStore.setLogCondition({
-    serviceId: selectorStore.currentService
-      ? selectorStore.currentService.id
-      : state.service.id,
-    endpointId: endpoint || state.endpoint.id || undefined,
-    serviceInstanceId: instance || state.instance.id || undefined,
-    queryDuration: appStore.durationTime,
-    keywordsOfContent: keywordsOfContent.value,
-    excludingKeywordsOfContent: excludingKeywordsOfContent.value,
-    tags: tagsMap.value.length ? tagsMap.value : undefined,
-    paging: { pageNum: 1, pageSize: 15, needTotal: true },
-    relatedTrace: traceId.value ? { traceId: traceId.value } : undefined,
-  });
+  if (dashboardStore.layerId === "BROWSER") {
+    logStore.setLogCondition({
+      serviceId: selectorStore.currentService
+        ? selectorStore.currentService.id
+        : state.service.id,
+      pagePathId: endpoint || state.endpoint.id || undefined,
+      serviceVersionId: instance || state.instance.id || undefined,
+      paging: { pageNum: 1, pageSize: 15 },
+      queryDuration: appStore.durationTime,
+      category: state.category.value,
+    });
+  } else {
+    logStore.setLogCondition({
+      serviceId: selectorStore.currentService
+        ? selectorStore.currentService.id
+        : state.service.id,
+      endpointId: endpoint || state.endpoint.id || undefined,
+      serviceInstanceId: instance || state.instance.id || undefined,
+      queryDuration: appStore.durationTime,
+      keywordsOfContent: keywordsOfContent.value,
+      excludingKeywordsOfContent: excludingKeywordsOfContent.value,
+      tags: tagsMap.value.length ? tagsMap.value : undefined,
+      paging: { pageNum: 1, pageSize: 15 },
+      relatedTrace: traceId.value ? { traceId: traceId.value } : undefined,
+    });
+  }
   queryLogs();
 }
 async function queryLogs() {
@@ -555,45 +528,9 @@ function removeExcludeContent(index: number) {
   });
   excludingContentStr.value = "";
 }
-function setSearchTerm(term: string) {
-  currentSearchTerm.value = term;
-  if (term === "column") {
-    setTimeout(() => {
-      hideTags();
-    }, 200);
-  }
-}
-function cancelSearchTerm() {
-  switch (currentSearchTerm.value) {
-    case "traceId":
-      traceId.value = "";
-      break;
-    case "tags":
-      tagsList.value = [];
-      tagsMap.value = [];
-      logTagsComponent.value?.emptyTags();
-      break;
-    case "keywords":
-      keywordsOfContent.value = [];
-      break;
-    case "exclude":
-      excludingKeywordsOfContent.value = [];
-      break;
-    case "instance":
-      state.instance = { value: "0", label: "All" };
-      break;
-    case "endpoints":
-      state.endpoint = { value: "0", label: "All" };
-      getEndpoints();
-      break;
-    case "service":
-      state.service = { value: "", label: "" };
-      break;
-  }
-  removeFromActiveTerms();
-  currentSearchTerm.value = "";
-  searchLogs();
-}
+onUnmounted(() => {
+  logStore.resetCondition();
+});
 watch(
   () => selectorStore.currentService,
   () => {
@@ -659,6 +596,7 @@ watch(
 }
 .row {
   margin-bottom: 5px;
+  position: relative;
 }
 
 .inputs-max {
@@ -670,8 +608,11 @@ watch(
 }
 
 .search-btn {
-  margin-left: 20px;
+  position: absolute;
+  top: 0;
+  right: 10px;
   cursor: pointer;
+  width: 120px;
 }
 
 .tips {

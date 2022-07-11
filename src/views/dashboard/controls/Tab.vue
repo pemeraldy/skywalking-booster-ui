@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <div ref="tabRef" class="flex-h tab-header">
-    <div class="tabs">
+  <div class="flex-h tab-header">
+    <div class="tabs scroll_bar_style" @click="handleClick">
       <span
         v-for="(child, idx) in data.children || []"
         :key="idx"
@@ -26,55 +26,48 @@ limitations under the License. -->
           v-model="child.name"
           placeholder="Please input"
           class="tab-name"
-          :readonly="isNaN(editTabIndex)"
-          :class="{ view: isNaN(editTabIndex) }"
+          :readonly="isNaN(editTabIndex) && !canEditTabName"
+          :class="{ view: !canEditTabName }"
         />
         <Icon
           v-show="activeTabIndex === idx"
           size="sm"
           iconName="cancel"
           @click="deleteTabItem($event, idx)"
-          v-if="dashboardStore.editMode"
+          v-if="dashboardStore.editMode && canEditTabName"
         />
+      </span>
+      <span class="tab-icons">
+        <el-tooltip content="Copy Link" placement="bottom">
+          <i @click="copyLink">
+            <Icon size="middle" iconName="review-list" class="tab-icon" />
+          </i>
+        </el-tooltip>
       </span>
       <span class="tab-icons" v-if="dashboardStore.editMode">
         <el-tooltip content="Add tab items" placement="bottom">
           <i @click="addTabItem">
-            <Icon size="middle" iconName="add" />
+            <Icon size="middle" iconName="add_fill" class="tab-icon" />
           </i>
         </el-tooltip>
       </span>
     </div>
     <div class="operations" v-if="dashboardStore.editMode">
-      <el-popover
-        placement="bottom"
-        trigger="click"
-        :width="200"
-        v-model:visible="showTools"
-      >
-        <template #reference>
-          <span>
-            <Icon
-              iconName="ellipsis_v"
-              size="middle"
-              class="operation"
-              @click="showTools = true"
-            />
-          </span>
+      <el-dropdown placement="bottom" trigger="click" :width="200">
+        <span class="icon-operation">
+          <Icon iconName="ellipsis_v" size="middle" />
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="canEditTabName = true">
+              <span class="edit-tab">{{ t("editTab") }}</span>
+            </el-dropdown-item>
+            <el-dropdown-item @click="removeTab">
+              <span>{{ t("delete") }}</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
         </template>
-        <div
-          class="tools"
-          @click="
-            canEditTabName = true;
-            showTools = false;
-          "
-        >
-          <span class="edit-tab">{{ t("editTab") }}</span>
-        </div>
-        <div class="tools" @click="removeTab">
-          <span>{{ t("delete") }}</span>
-        </div>
-      </el-popover>
+      </el-dropdown>
     </div>
   </div>
   <div class="tab-layout" @click="handleClick">
@@ -147,8 +140,16 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, defineComponent, toRefs } from "vue";
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  defineComponent,
+  toRefs,
+} from "vue";
 import { useI18n } from "vue-i18n";
+import { useRoute } from "vue-router";
 import type { PropType } from "vue";
 import { LayoutConfig } from "@/types/dashboard";
 import { useDashboardStore } from "@/store/modules/dashboard";
@@ -159,7 +160,10 @@ import Profile from "./Profile.vue";
 import Log from "./Log.vue";
 import Text from "./Text.vue";
 import Ebpf from "./Ebpf.vue";
+import Event from "./Event.vue";
 import { dragIgnoreFrom } from "../data";
+import DemandLog from "./DemandLog.vue";
+import copy from "@/utils/copy";
 
 const props = {
   data: {
@@ -170,24 +174,38 @@ const props = {
 };
 export default defineComponent({
   name: "Tab",
-  components: { Topology, Widget, Trace, Profile, Log, Text, Ebpf },
+  components: {
+    Topology,
+    Widget,
+    Trace,
+    Profile,
+    Log,
+    Text,
+    Ebpf,
+    DemandLog,
+    Event,
+  },
   props,
   setup(props) {
     const { t } = useI18n();
     const dashboardStore = useDashboardStore();
-    const activeTabIndex = ref<number>(0);
+    const route = useRoute();
+    const activeTabIndex = ref<number>(
+      Number(route.params.activeTabIndex) || 0
+    );
     const activeTabWidget = ref<string>("");
     const editTabIndex = ref<number>(NaN); // edit tab item name
+    const currentItem = ref<number>(NaN);
+    const arrayOfItems = ref<any[]>([]);
+    const isScrolling = ref<boolean>(false);
+
     const canEditTabName = ref<boolean>(false);
     const needQuery = ref<boolean>(false);
-    const showTools = ref<boolean>(false);
-    const tabRef = ref<any>("");
-    const tabObserveContainer = ref<any>(null);
-    const arrayOfItems = ref<Element[]>([]);
-    const currentItem = ref<number>(0);
-    const isScrolling = ref(false);
 
-    const l = dashboardStore.layout.findIndex((d: LayoutConfig) => d.i === props.data.i);
+    dashboardStore.setActiveTabIndex(activeTabIndex);
+    const l = dashboardStore.layout.findIndex(
+      (d: LayoutConfig) => d.i === props.data.i
+    );
     if (dashboardStore.layout[l].children.length) {
       dashboardStore.setCurrentTabItems(
         dashboardStore.layout[l].children[activeTabIndex.value].children
@@ -270,6 +288,11 @@ export default defineComponent({
         dashboardStore.layout[l].children[activeTabIndex.value].children
       );
       needQuery.value = true;
+      if (route.params.activeTabIndex) {
+        let p = location.href.split("/tab/")[0];
+        p = p + "/tab/" + activeTabIndex.value;
+        history.replaceState({}, "", p);
+      }
     }
     function removeTab(e: Event) {
       e.stopPropagation();
@@ -296,6 +319,7 @@ export default defineComponent({
       editTabIndex.value = index;
     }
     function handleClick(el: any) {
+      needQuery.value = true;
       if (["tab-name", "edit-tab"].includes(el.target.className)) {
         return;
       }
@@ -305,7 +329,9 @@ export default defineComponent({
     function clickTabGrid(e: Event, item: LayoutConfig) {
       e.stopPropagation();
       activeTabWidget.value = item.i;
-      dashboardStore.activeGridItem(`${props.data.i}-${activeTabIndex.value}-${item.i}`);
+      dashboardStore.activeGridItem(
+        `${props.data.i}-${activeTabIndex.value}-${item.i}`
+      );
       handleClick(e);
     }
     function layoutUpdatedEvent() {
@@ -316,18 +342,15 @@ export default defineComponent({
         dashboardStore.layout[l].children[activeTabIndex.value].children
       );
     }
-
-    function initScrollWatcher() {
-      tabObserveContainer?.value?.addEventListener("wheel", (e: WheelEvent) => {
-        if (isScrolling.value === false) {
-          isScrolling.value = true;
-          if (e.deltaY < 0) {
-            scrollUp();
-          } else {
-            scrollDown();
-          }
-        }
-      });
+    function copyLink() {
+      let path = "";
+      if (route.params.activeTabIndex === undefined) {
+        path = location.href + "/tab/" + activeTabIndex.value;
+      } else {
+        const p = location.href.split("/tab/")[0];
+        path = p + "/tab/" + activeTabIndex.value;
+      }
+      copy(path);
     }
     document.body.addEventListener("click", handleClick, false);
     watch(
@@ -346,15 +369,15 @@ export default defineComponent({
       }
     );
     onMounted(() => {
-      initScrollWatcher();
-      tabRef?.value["parentElement"]?.classList?.toggle("item");
+      // initScrollWatcher();
+      // tabRef?.value["parentElement"]?.classList?.toggle("item");
     });
     onBeforeUnmount(() => {
       observeItems(true);
     });
     return {
       currentItem,
-      tabObserveContainer,
+      // tabObserveContainer,
       scrollToGraph,
       handleClick,
       layoutUpdatedEvent,
@@ -364,15 +387,15 @@ export default defineComponent({
       deleteTabItem,
       removeTab,
       clickTabs,
+      copyLink,
       ...toRefs(props),
-      tabRef,
+      // tabRef,
       activeTabWidget,
       dashboardStore,
       activeTabIndex,
       editTabIndex,
       needQuery,
       canEditTabName,
-      showTools,
       t,
       dragIgnoreFrom,
     };
@@ -432,24 +455,30 @@ export default defineComponent({
 .tabs {
   height: 40px;
   color: #ccc;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  overflow-y: hidden;
 
   span {
     display: inline-block;
-    padding: 0 10px;
-    margin: 0 10px;
     height: 40px;
     line-height: 40px;
     cursor: pointer;
+    text-align: center;
   }
 
   .tab-name {
-    max-width: 130px;
+    max-width: 110px;
     height: 20px;
     line-height: 20px;
     outline: none;
     color: #333;
     font-style: normal;
     margin-right: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
   }
 
   .tab-icons {
@@ -470,7 +499,10 @@ export default defineComponent({
 
   span.active {
     border-bottom: 1px solid #409eff;
-    color: #409eff;
+
+    .tab-name {
+      color: #409eff;
+    }
   }
 }
 .tab-header .tabs .span.active {
@@ -482,6 +514,11 @@ export default defineComponent({
   height: 40px;
   line-height: 40px;
   padding-right: 10px;
+}
+
+.icon-operation {
+  display: inline-block;
+  margin-top: 8px;
 }
 
 .tab-header {
@@ -506,6 +543,10 @@ export default defineComponent({
   overflow: auto;
 }
 
+.tab-icon {
+  color: #666;
+}
+
 .vue-grid-item.active {
   border: 1px solid #409eff;
 }
@@ -516,18 +557,5 @@ export default defineComponent({
   font-size: 14px;
   padding-top: 30px;
   color: #888;
-}
-
-.tools {
-  padding: 5px 0;
-  color: #999;
-  cursor: pointer;
-  position: relative;
-  text-align: center;
-
-  &:hover {
-    color: #409eff;
-    background-color: #eee;
-  }
 }
 </style>
