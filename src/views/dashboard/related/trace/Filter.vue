@@ -33,6 +33,7 @@ limitations under the License. -->
           </el-button>
         </el-tooltip>
       </div>
+
     </div>
     <div class="wrap-filters">
       <div class="filter" v-if="activeFilter === 'service'">
@@ -98,6 +99,7 @@ limitations under the License. -->
         <span class="grey mr-5">-</span>
         <el-input size="small" class="inputs" v-model="maxTraceDuration" />
       </div>
+      
       <keep-alive>
         <ConditionTags
           v-if="activeFilter === 'tags'"
@@ -106,8 +108,10 @@ limitations under the License. -->
           @update="updateTags"
         />
       </keep-alive>
-      <el-button
-        v-if="activeFilter"
+      <!-- SEARCH & CANCEL BTN -->
+      <div v-if="activeFilter">
+        <el-button
+        
         class="search-btn filter-btn"
         size="small"
         type="primary"
@@ -116,7 +120,7 @@ limitations under the License. -->
         <Icon iconSize="sm" iconName="search" />
       </el-button>
       <el-button
-        v-if="activeFilter"
+        
         class="search-btn filter-btn"
         size="small"
         type="danger"
@@ -124,11 +128,38 @@ limitations under the License. -->
       >
         <Icon iconSize="sm" iconName="cancel" />
       </el-button>
+      </div>
+      
     </div>
   </div>
+  <!-- <div class="flex-h row">
+    <div class="mr-10">
+      <span class="grey mr-5">{{ t("traceID") }}:</span>
+      <el-input size="small" v-model="traceId" class="traceId" />
+    </div>
+    <div class="mr-10">
+      <span class="sm b grey mr-5">{{ t("duration") }}:</span>
+      <el-input
+        size="small"
+        class="inputs mr-5"
+        v-model="minTraceDuration"
+        type="number"
+      />
+      <span class="grey mr-5">-</span>
+      <el-input
+        size="small"
+        class="inputs"
+        v-model="maxTraceDuration"
+        type="number"
+      />
+    </div>
+  </div>
+  <div class="flex-h">
+    <ConditionTags :type="'TRACE'" @update="updateTags" />
+  </div> -->
 </template>
 <script lang="ts" setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { Option } from "@/types/app";
 import { Status } from "../../data";
@@ -146,6 +177,10 @@ interface filtersObject {
   description: string;
 }
 
+/*global defineProps */
+const props = defineProps({
+  needQuery: { type: Boolean, default: true },
+});
 const { t } = useI18n();
 const appStore = useAppStoreWithOut();
 const selectorStore = useSelectorStore();
@@ -195,8 +230,8 @@ function setFilter(filter: string) {
 }
 
 const traceId = ref<string>("");
-const minTraceDuration = ref<string>("");
-const maxTraceDuration = ref<string>("");
+const minTraceDuration = ref<number>();
+const maxTraceDuration = ref<number>();
 const tagsList = ref<string[]>([]);
 const tagsMap = ref<Option[]>([]);
 const state = reactive<any>({
@@ -213,6 +248,10 @@ const traceTagsComponent = ref<InstanceType<typeof ConditionTags> | null>(null);
 //   appStore.durationRow.end,
 // ]);
 init();
+if (props.needQuery) {
+  init();
+}
+
 async function init() {
   if (dashboardStore.entity === EntityType[1].value) {
     await getServices();
@@ -280,8 +319,8 @@ function cancelSearch() {
       state.service = { value: "", label: "" };
       break;
     case "duration":
-      minTraceDuration.value = "";
-      maxTraceDuration.value = "";
+      minTraceDuration.value = 0;
+      maxTraceDuration.value = 0;
       break;
     case "tags":
       tagsList.value = [];
@@ -313,7 +352,7 @@ function handleActiveFilterState() {
 
       break;
     case "duration":
-      if (!minTraceDuration.value.length || !maxTraceDuration.value.length) return;
+      if (!minTraceDuration.value || !maxTraceDuration.value) return;
       traceStore.setActiveFilter(activeFilter.value);
       addToActiveFilterList();
 
@@ -360,11 +399,11 @@ function searchTraces() {
     serviceInstanceId: instance || state.instance.id || undefined,
     traceState: state.status.value || "ALL",
     queryDuration: appStore.durationTime,
-    minTraceDuration: minTraceDuration.value || undefined,
-    maxTraceDuration: maxTraceDuration.value || undefined,
+    minTraceDuration: Number(minTraceDuration.value),
+    maxTraceDuration: Number(maxTraceDuration.value),
     queryOrder: "BY_DURATION",
     tags: tagsMap.value.length ? tagsMap.value : undefined,
-    paging: { pageNum: 1, pageSize: 15, needTotal: true },
+    paging: { pageNum: 1, pageSize: 20 },
   });
   queryTraces();
 }
@@ -437,6 +476,7 @@ watch(
 
 .row {
   margin-bottom: 5px;
+  position: relative;
 }
 
 .traceId {
@@ -444,8 +484,11 @@ watch(
 }
 
 .search-btn {
-  margin-left: 20px;
   cursor: pointer;
+  // width: 120px;
+  // position: absolute;
+  // top: 0;
+  // right: 10px;
 }
 .filter-container {
   align-items: center;

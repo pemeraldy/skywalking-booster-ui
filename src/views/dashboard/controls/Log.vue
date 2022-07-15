@@ -29,15 +29,16 @@ limitations under the License. -->
         <span>{{ t("delete") }}</span>
       </div>
     </el-popover>
-    <!-- <div class="header">
-    </div> -->
+    <div class="header">
+      <Header :needQuery="needQuery" />
+    </div>
     <div class="log">
       <List />
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import type { onBeforeUnmount, onMounted } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import List from "../related/log/List.vue";
@@ -49,6 +50,7 @@ const props = defineProps({
     default: () => ({}),
   },
   activeIndex: { type: String, default: "" },
+  needQuery: { type: Boolean, default: true },
 });
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
@@ -69,6 +71,7 @@ onBeforeUnmount(() => {
   height: 100%;
   font-size: 12px;
   position: relative;
+  overflow: auto;
 }
 
 .delete {
@@ -81,6 +84,7 @@ onBeforeUnmount(() => {
   padding: 10px;
   font-size: 12px;
   border-bottom: 1px solid #dcdfe6;
+  min-width: 1024px;
 }
 
 .tools {
@@ -98,6 +102,5 @@ onBeforeUnmount(() => {
 
 .log {
   width: 100%;
-  overflow: auto;
 }
 </style>

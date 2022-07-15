@@ -205,7 +205,7 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import { ElMessage } from "element-plus";
 import { Option } from "@/types/app";
 import { useI18n } from "vue-i18n";
-import TraceDetailsTools from "./component/TraceDetailsTools";
+import TraceDetailsTools from "./component/TraceDetailsTools.vue";
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const selectorStore = useSelectorStore();
@@ -423,7 +423,12 @@ async function getServices() {
   states.currentService = selectorStore.currentService.value;
   const e = dashboardStore.entity.split("Relation")[0];
   if (
-    [EntityType[2].value, EntityType[3].value].includes(dashboardStore.entity)
+    [
+      EntityType[2].value,
+      EntityType[3].value,
+      EntityType[5].value,
+      EntityType[6].value,
+    ].includes(dashboardStore.entity)
   ) {
     fetchPods(e, selectorStore.currentService.id, true);
   }
@@ -443,7 +448,10 @@ async function changeService(service: any) {
   if (service[0]) {
     states.currentService = service[0].value;
     selectorStore.setCurrentService(service[0]);
-    fetchPods(dashboardStore.entity, selectorStore.currentService.id, true);
+    const e = dashboardStore.entity.split("Relation")[0];
+    selectorStore.setCurrentPod(null);
+    states.currentPod = "";
+    fetchPods(e, selectorStore.currentService.id, true);
   } else {
     selectorStore.setCurrentService(null);
   }
@@ -453,6 +461,9 @@ function changeDestService(service: any) {
   if (service[0]) {
     states.currentDestService = service[0].value;
     selectorStore.setCurrentDestService(service[0]);
+    selectorStore.setCurrentDestPod(null);
+    states.currentDestPod = "";
+    fetchPods(dashboardStore.entity, selectorStore.currentDestService.id, true);
   } else {
     selectorStore.setCurrentDestService(null);
   }
@@ -527,6 +538,12 @@ function setTabControls(id: string) {
     case "addText":
       dashboardStore.addTabControls("Text");
       break;
+    case "addDemandLog":
+      dashboardStore.addTabControls("DemandLog");
+      break;
+    case "addEvent":
+      dashboardStore.addTabControls("Event");
+      break;
     default:
       ElMessage.info("Don't support this control");
       break;
@@ -558,6 +575,12 @@ function setControls(id: string) {
       break;
     case "addText":
       dashboardStore.addControl("Text");
+      break;
+    case "addDemandLog":
+      dashboardStore.addControl("DemandLog");
+      break;
+    case "addEvent":
+      dashboardStore.addControl("Event");
       break;
     default:
       dashboardStore.addControl("Widget");
@@ -615,11 +638,11 @@ async function fetchPods(
       if (setPod) {
         let p;
         if (states.currentDestPod) {
-          p = selectorStore.pods.find(
+          p = selectorStore.destPods.find(
             (d: { label: string }) => d.label === states.currentDestPod
           );
         } else {
-          p = selectorStore.pods.find(
+          p = selectorStore.destPods.find(
             (d: { label: string }, index: number) => index === 0
           );
         }
@@ -635,11 +658,11 @@ async function fetchPods(
       if (setPod) {
         let p;
         if (states.currentDestPod) {
-          p = selectorStore.pods.find(
+          p = selectorStore.destPods.find(
             (d: { label: string }) => d.label === states.currentDestPod
           );
         } else {
-          p = selectorStore.pods.find(
+          p = selectorStore.destPods.find(
             (d: { label: string }, index: number) => index === 0
           );
         }

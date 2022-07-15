@@ -266,6 +266,7 @@ limitations under the License. -->
 import { ArrowDown, View, Hide } from "@element-plus/icons-vue";
 import { ref, reactive, watch, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
+// import { ref, reactive, watch, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { Option } from "@/types/app";
 import { useLogStore } from "@/store/modules/log";
@@ -275,7 +276,12 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import ConditionTags from "@/views/components/ConditionTags.vue";
 import { ElMessage } from "element-plus";
 import { EntityType } from "../../data";
+import { ErrorCategory } from "./data";
 
+/*global defineProps */
+const props = defineProps({
+  needQuery: { type: Boolean, default: true },
+});
 const { t } = useI18n();
 const appStore = useAppStoreWithOut();
 const selectorStore = useSelectorStore();
@@ -304,6 +310,7 @@ const state = reactive<any>({
   instance: { value: "0", label: "All" },
   endpoint: { value: "0", label: "All" },
   service: { value: "", label: "" },
+  category: { value: "ALL", label: "All" },
 });
 const logTagsComponent = ref<InstanceType<typeof ConditionTags> | null>(null);
 interface filtersObject {
@@ -373,6 +380,9 @@ function hideTags() {
   let tagsWrap = document.querySelector(".el-select__tags");
   if (!tagsWrap) return;
   tagsWrap.style.display = "none";
+}
+if (props.needQuery) {
+  init();
 }
 async function init() {
   const resp = await logStore.getLogsByKeywords();
@@ -481,19 +491,32 @@ function searchLogs() {
   if (dashboardStore.entity === EntityType[3].value) {
     instance = selectorStore.currentPod.id;
   }
-  logStore.setLogCondition({
-    serviceId: selectorStore.currentService
-      ? selectorStore.currentService.id
-      : state.service.id,
-    endpointId: endpoint || state.endpoint.id || undefined,
-    serviceInstanceId: instance || state.instance.id || undefined,
-    queryDuration: appStore.durationTime,
-    keywordsOfContent: keywordsOfContent.value,
-    excludingKeywordsOfContent: excludingKeywordsOfContent.value,
-    tags: tagsMap.value.length ? tagsMap.value : undefined,
-    paging: { pageNum: 1, pageSize: 15, needTotal: true },
-    relatedTrace: traceId.value ? { traceId: traceId.value } : undefined,
-  });
+  if (dashboardStore.layerId === "BROWSER") {
+    logStore.setLogCondition({
+      serviceId: selectorStore.currentService
+        ? selectorStore.currentService.id
+        : state.service.id,
+      pagePathId: endpoint || state.endpoint.id || undefined,
+      serviceVersionId: instance || state.instance.id || undefined,
+      paging: { pageNum: 1, pageSize: 15 },
+      queryDuration: appStore.durationTime,
+      category: state.category.value,
+    });
+  } else {
+    logStore.setLogCondition({
+      serviceId: selectorStore.currentService
+        ? selectorStore.currentService.id
+        : state.service.id,
+      endpointId: endpoint || state.endpoint.id || undefined,
+      serviceInstanceId: instance || state.instance.id || undefined,
+      queryDuration: appStore.durationTime,
+      keywordsOfContent: keywordsOfContent.value,
+      excludingKeywordsOfContent: excludingKeywordsOfContent.value,
+      tags: tagsMap.value.length ? tagsMap.value : undefined,
+      paging: { pageNum: 1, pageSize: 15 },
+      relatedTrace: traceId.value ? { traceId: traceId.value } : undefined,
+    });
+  }
   queryLogs();
 }
 async function queryLogs() {
@@ -594,6 +617,9 @@ function cancelSearchTerm() {
   currentSearchTerm.value = "";
   searchLogs();
 }
+onUnmounted(() => {
+  logStore.resetCondition();
+});
 watch(
   () => selectorStore.currentService,
   () => {
@@ -659,6 +685,7 @@ watch(
 }
 .row {
   margin-bottom: 5px;
+  position: relative;
 }
 
 .inputs-max {
@@ -670,8 +697,11 @@ watch(
 }
 
 .search-btn {
-  margin-left: 20px;
+  position: absolute;
+  top: 0;
+  right: 10px;
   cursor: pointer;
+  width: 120px;
 }
 
 .tips {

@@ -60,7 +60,7 @@ limitations under the License. -->
       @closed="showDetail = false"
       :title="t('logDetail')"
     >
-      <LogDetail :currentLog="currentLog" />
+      <LogDetail :currentLog="currentLog" :columns="columns" />
     </el-dialog>
   </div>
 </template>
@@ -72,7 +72,7 @@ import LogService from "./LogService.vue";
 import LogDetail from "./LogDetail.vue";
 import { logStore } from "@/store/modules/log";
 
-/*global defineProps, Nullable */
+/*global defineProps */
 const props = defineProps({
   type: { type: String, default: "service" },
   tableData: { type: Array, default: () => [] },
@@ -84,6 +84,8 @@ const currentLog = ref<any>({});
 const showDetail = ref<boolean>(false);
 const dragger = ref<Nullable<HTMLSpanElement>>(null);
 // const method = ref<number>(380);
+// const columns: any[] =
+//   props.type === "browser" ? BrowserLogConstants : ServiceLogConstants;
 
 const columns = ref<any[]>(
   props.type === "browser"
@@ -103,17 +105,18 @@ function setCurrentLog(log: any) {
 .log {
   font-size: 12px;
   height: 100%;
+  border-bottom: 1px solid #eee;
+  width: 100%;
   overflow: auto;
 }
 
 .log-header {
-  /*display: flex;*/
   white-space: nowrap;
   user-select: none;
   border-left: 0;
   border-right: 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  /*background-color: #f3f4f9;*/
+
   .traceId {
     width: 390px;
   }
@@ -131,11 +134,8 @@ function setCurrentLog(log: any) {
 }
 
 .log-header div {
-  /*min-width: 140px;*/
-  width: 140px;
-  /*flex-grow: 1;*/
   display: inline-block;
-  padding: 0 4px;
+  padding: 0 5px;
   border: 1px solid transparent;
   border-right: 1px dotted silver;
   line-height: 30px;
@@ -150,5 +150,19 @@ function setCurrentLog(log: any) {
   div{
     flex-grow: 1;
   }
+}
+.browser-header {
+  div {
+    min-width: 140px;
+    width: 10%;
+  }
+
+  .max-item {
+    width: 20%;
+  }
+}
+
+.service-header div {
+  width: 140px;
 }
 </style>
