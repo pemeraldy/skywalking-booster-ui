@@ -25,7 +25,9 @@ limitations under the License. -->
         >
           <el-button
             type="success"
-            :class="[listOfActiveFilters.includes(filter.name) ? 'active-filter' : '']"
+            :class="[
+              listOfActiveFilters.includes(filter.name) ? 'active-filter' : '',
+            ]"
             class="filter-btn mx-3"
             @click="setFilter(filter.name)"
           >
@@ -33,7 +35,6 @@ limitations under the License. -->
           </el-button>
         </el-tooltip>
       </div>
-
     </div>
     <div class="wrap-filters">
       <div class="filter" v-if="activeFilter === 'service'">
@@ -49,7 +50,8 @@ limitations under the License. -->
       <div
         class="filter"
         v-if="
-          activeFilter === 'instance' && dashboardStore.entity !== EntityType[3].value
+          activeFilter === 'instance' &&
+          dashboardStore.entity !== EntityType[3].value
         "
       >
         <span class="grey mr-5">{{ t("instance") }}:</span>
@@ -61,10 +63,12 @@ limitations under the License. -->
           @change="changeField('instance', $event)"
         />
       </div>
+
       <div
         class="filter"
         v-if="
-          dashboardStore.entity !== EntityType[2].value && activeFilter === 'endpoints'
+          dashboardStore.entity !== EntityType[2].value &&
+          activeFilter === 'endpoints'
         "
       >
         <span class="grey mr-5">{{ t("endpoint") }}:</span>
@@ -99,7 +103,6 @@ limitations under the License. -->
         <span class="grey mr-5">-</span>
         <el-input size="small" class="inputs" v-model="maxTraceDuration" />
       </div>
-      
       <keep-alive>
         <ConditionTags
           v-if="activeFilter === 'tags'"
@@ -111,25 +114,22 @@ limitations under the License. -->
       <!-- SEARCH & CANCEL BTN -->
       <div v-if="activeFilter">
         <el-button
-        
-        class="search-btn filter-btn"
-        size="small"
-        type="primary"
-        @click="searchTraces"
-      >
-        <Icon iconSize="sm" iconName="search" />
-      </el-button>
-      <el-button
-        
-        class="search-btn filter-btn"
-        size="small"
-        type="danger"
-        @click="cancelSearch"
-      >
-        <Icon iconSize="sm" iconName="cancel" />
-      </el-button>
+          class="search-btn filter-btn"
+          size="small"
+          type="primary"
+          @click="searchTraces"
+        >
+          <Icon iconSize="sm" iconName="search" />
+        </el-button>
+        <el-button
+          class="search-btn filter-btn"
+          size="small"
+          type="danger"
+          @click="cancelSearch"
+        >
+          <Icon iconSize="sm" iconName="cancel" />
+        </el-button>
       </div>
-      
     </div>
   </div>
 </template>
@@ -408,15 +408,15 @@ async function searchEndpoints(keyword: string) {
 watch(
   () => minTraceDuration.value,
   () => {
-    appStore.setMinTraceDuration(minTraceDuration.value)
+    appStore.setMinTraceDuration(minTraceDuration.value);
   }
-)
+);
 watch(
   () => maxTraceDuration.value,
   () => {
-    appStore.setMaxTraceDuration(maxTraceDuration.value)
+    appStore.setMaxTraceDuration(maxTraceDuration.value);
   }
-)
+);
 watch(
   () => [selectorStore.currentPod],
   () => {
