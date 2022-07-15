@@ -156,6 +156,16 @@ limitations under the License. -->
             :isRemote="true"
             @query="searchEndpoints"
           />
+          <div class="mr-5" v-if="isBrowser">
+            <span class="grey mr-5"> {{ t("category") }}: </span>
+            <Selector
+              size="small"
+              :value="state.category.value"
+              :options="ErrorCategory"
+              placeholder="Select a category"
+              @change="changeField('category', $event)"
+            />
+          </div>
         </div>
         <b v-else>{{ t("endpoint") }} data not available</b>
       </div>
@@ -266,7 +276,6 @@ limitations under the License. -->
 import { ArrowDown, View, Hide } from "@element-plus/icons-vue";
 import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
-// import { ref, reactive, watch, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { Option } from "@/types/app";
 import { useLogStore } from "@/store/modules/log";
@@ -276,7 +285,7 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import ConditionTags from "@/views/components/ConditionTags.vue";
 import { ElMessage } from "element-plus";
 import { EntityType } from "../../data";
-// import { ErrorCategory } from "./data";
+import { ErrorCategory } from "./data";
 
 /*global defineProps */
 const props = defineProps({
