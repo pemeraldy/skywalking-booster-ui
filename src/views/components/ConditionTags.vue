@@ -106,13 +106,13 @@ const tipsMap = {
 const dropdownTag = ref<Nullable<any>>(null);
 
 fetchTagKeys();
-
+//  eslint-disable-next-line no-undef
 defineExpose({
   tagsList,
-  emptyTags
-})
-function emptyTags (){
-  tagsList.value = []
+  emptyTags,
+});
+function emptyTags() {
+  tagsList.value = [];
 }
 function removeTags(index: number) {
   tagsList.value.splice(index, 1);
@@ -196,6 +196,7 @@ watch(
 .items-center {
   align-items: center;
 }
+
 .trace-tags {
   padding: 1px 5px 0 0;
   border-radius: 3px;

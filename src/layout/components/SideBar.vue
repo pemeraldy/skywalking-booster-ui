@@ -111,7 +111,7 @@ import { useI18n } from "vue-i18n";
 import Icon from "@/components/Icon.vue";
 import { useAppStoreWithOut } from "@/store/modules/app";
 
-const { path, query } = useRoute();
+const { query } = useRoute();
 
 // eslint-disable-next-line no-undef
 let portalStyle = reactive({});
@@ -127,7 +127,7 @@ if (query["portal"] === "true") {
 const isPortalView = computed(() => {
   return query["portal"] === "true";
 });
-const appStore = useAppStoreWithOut();
+// const appStore = useAppStoreWithOut();
 const { t } = useI18n();
 const name = ref<string>(String(useRouter().currentRoute.value.name));
 const theme = ["VirtualMachine", "Kubernetes"].includes(name.value || "")
