@@ -30,9 +30,9 @@ limitations under the License. -->
       </div>
     </el-popover>
     <!-- TODO: Look into this new Filter needQuery prop -->
-    <div class="header">
+    <!-- <div class="header">
       <Filter :needQuery="needQuery" />
-    </div>
+    </div> -->
     <div class="trace flex-h">
       <TraceList @show:trace="showTraceDetails" v-if="traceListActive" />
       <TraceDetail @show:list="showTraceList" v-if="!traceListActive" />

@@ -15,7 +15,7 @@ limitations under the License. -->
 
 <template>
   <div class="log">
-    <div :class="{ 'd-flex': visibleColumns.length < 6 }" class="log-header">      
+    <div :class="{ 'd-flex': visibleColumns.length < 6 }" class="log-header">
       <template v-for="(item, index) in columns">
         <template v-if="item.isVisible">
           <div
@@ -82,6 +82,7 @@ const useLogStore = logStore();
 const { t } = useI18n();
 const currentLog = ref<any>({});
 const showDetail = ref<boolean>(false);
+// eslint-disable-next-line no-undef
 const dragger = ref<Nullable<HTMLSpanElement>>(null);
 // const method = ref<number>(380);
 // const columns: any[] =
@@ -145,9 +146,9 @@ function setCurrentLog(log: any) {
   white-space: nowrap;
 }
 
-.d-flex{
+.d-flex {
   display: flex;
-  div{
+  div {
     flex-grow: 1;
   }
 }
