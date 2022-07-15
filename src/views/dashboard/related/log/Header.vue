@@ -264,7 +264,7 @@ limitations under the License. -->
 </template>
 <script lang="ts" setup>
 import { ArrowDown, View, Hide } from "@element-plus/icons-vue";
-import { ref, reactive, watch, computed, onMounted } from "vue";
+import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 // import { ref, reactive, watch, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
@@ -276,7 +276,7 @@ import { useSelectorStore } from "@/store/modules/selectors";
 import ConditionTags from "@/views/components/ConditionTags.vue";
 import { ElMessage } from "element-plus";
 import { EntityType } from "../../data";
-import { ErrorCategory } from "./data";
+// import { ErrorCategory } from "./data";
 
 /*global defineProps */
 const props = defineProps({
@@ -697,11 +697,11 @@ watch(
 }
 
 .search-btn {
-  position: absolute;
-  top: 0;
-  right: 10px;
+  // position: absolute;
+  // top: 0;
+  // right: 10px;
   cursor: pointer;
-  width: 120px;
+  // width: 120px;
 }
 
 .tips {

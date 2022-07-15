@@ -132,31 +132,6 @@ limitations under the License. -->
       
     </div>
   </div>
-  <!-- <div class="flex-h row">
-    <div class="mr-10">
-      <span class="grey mr-5">{{ t("traceID") }}:</span>
-      <el-input size="small" v-model="traceId" class="traceId" />
-    </div>
-    <div class="mr-10">
-      <span class="sm b grey mr-5">{{ t("duration") }}:</span>
-      <el-input
-        size="small"
-        class="inputs mr-5"
-        v-model="minTraceDuration"
-        type="number"
-      />
-      <span class="grey mr-5">-</span>
-      <el-input
-        size="small"
-        class="inputs"
-        v-model="maxTraceDuration"
-        type="number"
-      />
-    </div>
-  </div>
-  <div class="flex-h">
-    <ConditionTags :type="'TRACE'" @update="updateTags" />
-  </div> -->
 </template>
 <script lang="ts" setup>
 import { ref, reactive, watch } from "vue";
