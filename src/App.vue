@@ -16,6 +16,8 @@ limitations under the License. -->
   <router-view />
 </template>
 <style>
+@import "./styles/ui-fits.scss";
+
 #app {
   color: var(--spp-white);
   height: 100%;
