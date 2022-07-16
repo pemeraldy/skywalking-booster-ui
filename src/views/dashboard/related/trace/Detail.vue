@@ -13,128 +13,6 @@ limitations under the License. -->
 <template>
   <div class="trace-detail" v-loading="loading">
     <div :class="{ 'full-view': isFullView }" class="trace-chart">
-      <div
-        class="trace-detail-wrapper clear"
-        v-if="traceStore.currentTrace.endpointNames"
-      >
-        <h5 class="mb-5 mt-0">
-          <Icon
-            icon="clear"
-            v-if="traceStore.currentTrace.isError"
-            class="red mr-5 sm"
-          />
-          <span class="vm">{{ traceStore.currentTrace.endpointNames[0] }}</span>
-          <div class="trace-log-btn">
-            <el-button
-              size="small"
-              class="mr-10"
-              type="primary"
-              @click="searchTraceLogs"
-            >
-              {{ t("viewLogs") }}
-            </el-button>
-          </div>
-          <el-dialog
-            v-model="showTraceLogs"
-            :destroy-on-close="true"
-            fullscreen
-            @closed="showTraceLogs = false"
-          >
-            <div>
-              <el-pagination
-                v-model:currentPage="pageNum"
-                v-model:page-size="pageSize"
-                :small="true"
-                layout="prev, pager, next"
-                :pager-count="5"
-                :total="total"
-                @current-change="turnLogsPage"
-              />
-              <LogTable
-                :tableData="traceStore.traceSpanLogs || []"
-                :type="`service`"
-                :noLink="true"
-              >
-                <div class="log-tips" v-if="!traceStore.traceSpanLogs.length">
-                  {{ t("noData") }}
-                </div>
-              </LogTable>
-            </div>
-          </el-dialog>
-        </h5>
-        <div class="mb-5 blue sm">
-          <Selector
-            size="small"
-            :value="
-              traceStore.currentTrace.traceIds &&
-              traceStore.currentTrace.traceIds[0] &&
-              traceStore.currentTrace.traceIds[0].value
-            "
-            :options="traceStore.currentTrace.traceIds"
-            @change="changeTraceId"
-            class="trace-detail-ids"
-          />
-          <Icon
-            size="sm"
-            class="icon grey link-hover cp ml-5"
-            iconName="review-list"
-            @click="handleClick"
-          />
-        </div>
-        <div class="flex-h item">
-          <div>
-            <div class="tag mr-5">{{ t("start") }}</div>
-            <span class="mr-15 sm">
-              {{ dateFormat(parseInt(traceStore.currentTrace.start)) }}
-            </span>
-            <div class="tag mr-5">{{ t("duration") }}</div>
-            <span class="mr-15 sm"
-              >{{ traceStore.currentTrace.duration }} ms</span
-            >
-            <div class="tag mr-5">{{ t("spans") }}</div>
-            <span class="sm">{{ traceStore.traceSpans.length }}</span>
-          </div>
-          <div>
-            <el-button
-              class="grey"
-              size="small"
-              :class="{ ghost: displayMode !== 'List' }"
-              @click="displayMode = 'List'"
-            >
-              <Icon class="mr-5" size="sm" iconName="list-bulleted" />
-              {{ t("list") }}
-            </el-button>
-            <el-button
-              class="grey"
-              size="small"
-              :class="{ ghost: displayMode !== 'Tree' }"
-              @click="displayMode = 'Tree'"
-            >
-              <Icon class="mr-5" size="sm" iconName="issue-child" />
-              {{ t("tree") }}
-            </el-button>
-            <el-button
-              class="grey"
-              size="small"
-              :class="{ ghost: displayMode !== 'Table' }"
-              @click="displayMode = 'Table'"
-            >
-              <Icon class="mr-5" size="sm" iconName="table" />
-              {{ t("table") }}
-            </el-button>
-            <el-button
-              class="grey"
-              size="small"
-              :class="{ ghost: displayMode !== 'Statistics' }"
-              @click="displayMode = 'Statistics'"
-            >
-              <Icon class="mr-5" size="sm" iconName="statistics-bulleted" />
-              {{ t("statistics") }}
-            </el-button>
-          </div>
-        </div>
-      </div>
-      <div class="no-data" v-else>{{ t("noData") }}</div>
       <div class="trace-chart">
         <component
           v-if="traceStore.currentTrace.endpointNames"
@@ -159,7 +37,6 @@ import copy from "@/utils/copy";
 import graphs from "./components/index";
 import LogTable from "@/views/dashboard/related/components/LogTable/Index.vue";
 import { ElMessage } from "element-plus";
-// import TraceDetailsTools from '@/views/dashboard'
 export default defineComponent({
   name: "TraceDetail",
   components: {
@@ -258,9 +135,11 @@ export default defineComponent({
   // height: calc(100% - 100px);
   overflow: auto;
 }
+
 .trace-chart.full-view {
   height: calc(100% - 1px) !important;
 }
+
 .trace-detail-wrapper {
   font-size: 12px;
   padding: 5px 10px;

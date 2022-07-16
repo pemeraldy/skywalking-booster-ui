@@ -25,6 +25,8 @@ limitations under the License. -->
 import { AppMain, SideBar, NavBar } from "./components";
 </script>
 <style lang="scss" scoped>
+@import "../styles/ui-fits.scss";
+
 .app-wrapper {
   height: 100%;
 }

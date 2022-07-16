@@ -29,10 +29,6 @@ limitations under the License. -->
         <span>{{ t("delete") }}</span>
       </div>
     </el-popover>
-    <!-- TODO: Look into this new Filter needQuery prop -->
-    <!-- <div class="header">
-      <Filter :needQuery="needQuery" />
-    </div> -->
     <div class="trace flex-h">
       <TraceList @show:trace="showTraceDetails" v-if="traceListActive" />
       <TraceDetail @show:list="showTraceList" v-if="!traceListActive" />
@@ -122,8 +118,9 @@ onBeforeUnmount(() => {
   min-width: 1200px;
 }
 </style>
-<style>
-.header, .trace {
+<style scoped>
+.header,
+.trace {
   min-width: 100% !important;
 }
 </style>
