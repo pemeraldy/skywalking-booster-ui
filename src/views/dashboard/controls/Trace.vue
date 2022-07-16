@@ -122,3 +122,8 @@ onBeforeUnmount(() => {
   min-width: 1200px;
 }
 </style>
+<style>
+.header, .trace {
+  min-width: 100% !important;
+}
+</style>
