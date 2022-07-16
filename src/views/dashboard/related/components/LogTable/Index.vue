@@ -167,3 +167,17 @@ function setCurrentLog(log: any) {
   width: 140px;
 }
 </style>
+<style scoped>
+.log-header div {
+  width: 140px;
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-right: 1px dotted silver;
+  line-height: 30px;
+  background-color: #f3f4f9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
