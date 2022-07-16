@@ -170,9 +170,6 @@ limitations under the License. -->
         <b v-else>{{ t("endpoint") }} data not available</b>
       </div>
     </div>
-    <!-- <div class="row tips">
-      <b>{{ t("conditionNotice") }}</b>
-    </div> -->
     <div class="flex-h items-center">
       <div class="mr-5 flex-h items-center traceId" v-show="!isBrowser">
         <div class="flex-h items-center" v-if="currentSearchTerm === 'traceId'">
@@ -659,22 +656,27 @@ watch(
 #toggleColumn.el-dropdown-menu {
   padding: 0 !important;
 }
+
 .el-checkbox.custom-checkbox {
   width: 100%;
   padding: 5px 16px;
 }
+
 .dropdownSelector {
   background: var(--nice-black);
 }
+
 .el-dropdown-link {
   cursor: pointer;
   color: var(--el-color-primary);
   display: flex;
   align-items: center;
 }
+
 .el-divider--horizontal {
   margin: 0 !important;
 }
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -683,15 +685,15 @@ watch(
 .custom-checkbox .el-checkbox__label {
   color: var(--spp-white) !important;
 }
+
 .inputs {
   width: 120px;
 }
-.items-center {
-  align-items: center;
-}
+
 .justify-between {
   justify-content: space-between;
 }
+
 .row {
   margin-bottom: 5px;
   position: relative;
@@ -706,11 +708,7 @@ watch(
 }
 
 .search-btn {
-  // position: absolute;
-  // top: 0;
-  // right: 10px;
   cursor: pointer;
-  // width: 120px;
 }
 
 .tips {
@@ -755,35 +753,41 @@ watch(
 .el-button span {
   font-size: 10px !important;
 }
+
 .toggle-btn {
   height: 18px;
   margin: 0 5px;
 }
+
 .active-toggle.toggle-btn {
   background: rgba(4, 147, 114, 1) !important;
+
   span {
     color: #275410 !important;
   }
 }
+
 .items-center {
   align-items: center;
 }
+
 .space-between {
   justify-content: space-between !important;
 }
+
 .el-select-dropdown.is-multiple .el-select-dropdown__item.selected {
   background: transparent;
-}
-.el-select-dropdown.is-multiple .el-select-dropdown__item.selected {
   width: 100%;
   padding: 0 32px 0 20px;
+
+  &::after {
+    display: none;
+  }
 }
+
 .el-select-dropdown__item.selected {
   display: block;
   width: 100%;
   padding: 0 32px 0 20px;
-}
-.el-select-dropdown.is-multiple .el-select-dropdown__item.selected::after {
-  display: none;
 }
 </style>

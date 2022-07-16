@@ -147,7 +147,6 @@ export default defineComponent({
       }
     }
     function initScroller() {
-      //todo: smarter logic on when to add listeners
       if (query["portal"] === "true" && path.endsWith("Activity")) {
         console.log("Adding portal wheel/key listeners");
         scrollWrapRef?.value?.addEventListener("wheel", wheelGraphScroll, {
@@ -224,10 +223,6 @@ export default defineComponent({
 }
 
 .item {
-  // scroll-snap-align: start;
   height: 100%;
-  // padding: 40px;
-  // margin: 40px 0;
-  // background: orange;
 }
 </style>

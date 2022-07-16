@@ -140,7 +140,14 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, defineComponent, toRefs } from "vue";
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  defineComponent,
+  toRefs,
+} from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import type { PropType } from "vue";
@@ -197,12 +204,11 @@ export default defineComponent({
     const currentItem = ref<number>(0);
     const isScrolling = ref(false);
 
-    const l = dashboardStore.layout.findIndex((d: LayoutConfig) => d.i === props.data.i);
+    const l = dashboardStore.layout.findIndex(
+      (d: LayoutConfig) => d.i === props.data.i
+    );
 
     dashboardStore.setActiveTabIndex(activeTabIndex);
-    // const l = dashboardStore.layout.findIndex(
-    //   (d: LayoutConfig) => d.i === props.data.i
-    // );
     if (dashboardStore.layout[l].children.length) {
       dashboardStore.setCurrentTabItems(
         dashboardStore.layout[l].children[activeTabIndex.value].children
@@ -326,7 +332,9 @@ export default defineComponent({
     function clickTabGrid(e: Event, item: LayoutConfig) {
       e.stopPropagation();
       activeTabWidget.value = item.i;
-      dashboardStore.activeGridItem(`${props.data.i}-${activeTabIndex.value}-${item.i}`);
+      dashboardStore.activeGridItem(
+        `${props.data.i}-${activeTabIndex.value}-${item.i}`
+      );
       handleClick(e);
     }
     function layoutUpdatedEvent() {
@@ -414,6 +422,7 @@ export default defineComponent({
 .tab-layout::-webkit-scrollbar {
   display: none !important;
 }
+
 .scroll-tab-container {
   position: relative;
   height: 80vh;
@@ -423,19 +432,20 @@ export default defineComponent({
   backface-visibility: hidden;
   perspective: 1000;
   overflow: hidden;
-}
-.scroll-tab-container::-webkit-scrollbar {
-  display: none;
-}
-.scroll-tab-container {
   -ms-overflow-style: none;
   scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
+
 .tabitem {
   scroll-snap-align: start;
   height: 100%;
   margin: 0 0;
 }
+
 .scroll-handler__wrapper {
   z-index: 20;
   position: fixed;
@@ -445,6 +455,7 @@ export default defineComponent({
   top: 40vh;
   height: auto;
   width: 17px;
+
   .scroll-to {
     opacity: 0.5;
     width: 10px;
@@ -454,12 +465,14 @@ export default defineComponent({
     cursor: pointer;
     background: #4f4f4f;
   }
+
   .scroll-to.active {
     opacity: 1;
     padding: 6px;
     background: #252a2f;
   }
 }
+
 .tabs {
   height: 40px;
   color: #ccc;
@@ -513,9 +526,11 @@ export default defineComponent({
     }
   }
 }
+
 .tab-header .tabs .span.active {
   color: red !important;
 }
+
 .operations {
   color: #aaa;
   cursor: pointer;

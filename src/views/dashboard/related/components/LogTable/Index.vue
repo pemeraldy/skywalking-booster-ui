@@ -84,9 +84,6 @@ const currentLog = ref<any>({});
 const showDetail = ref<boolean>(false);
 // eslint-disable-next-line no-undef
 const dragger = ref<Nullable<HTMLSpanElement>>(null);
-// const method = ref<number>(380);
-// const columns: any[] =
-//   props.type === "browser" ? BrowserLogConstants : ServiceLogConstants;
 
 const columns = ref<any[]>(
   props.type === "browser"
@@ -148,10 +145,12 @@ function setCurrentLog(log: any) {
 
 .d-flex {
   display: flex;
+
   div {
     flex-grow: 1;
   }
 }
+
 .browser-header {
   div {
     min-width: 140px;
