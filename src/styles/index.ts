@@ -23,3 +23,4 @@ import "./reset.scss";
 //import "./spp-light.scss";
 //import "./spp-dark.scss";
 import "./jetbrains-dark.scss";
+import "./ui-fits.scss";
