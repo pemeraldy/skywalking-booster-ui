@@ -29,9 +29,7 @@ limitations under the License. -->
         <span>{{ t("delete") }}</span>
       </div>
     </el-popover>
-    <div class="header">
-      <Header :needQuery="needQuery" />
-    </div>
+
     <div class="log">
       <List />
     </div>
