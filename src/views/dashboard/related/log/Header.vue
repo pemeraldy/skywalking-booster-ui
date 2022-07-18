@@ -371,9 +371,14 @@ const arrayOfFilters = ref<filtersObject[]>([
 ]);
 onMounted(() => {
   if (portal) {
-    ["endpoint", "time", "contentType", "tags", "traceID"].forEach((col) =>
-      logStore.hideColumns(col)
-    );
+    [
+      "service",
+      "instance",
+      "endpoint",
+      "contentType",
+      "tags",
+      "traceID",
+    ].forEach((col) => logStore.hideColumns(col));
   }
 });
 init();
