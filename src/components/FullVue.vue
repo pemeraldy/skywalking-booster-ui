@@ -147,6 +147,7 @@ export default defineComponent({
       }
     }
     function initScroller() {
+      //todo: smarter logic on when to add listeners
       if (query["portal"] === "true" && path.endsWith("Activity")) {
         console.log("Adding portal wheel/key listeners");
         scrollWrapRef?.value?.addEventListener("wheel", wheelGraphScroll, {
@@ -162,7 +163,7 @@ export default defineComponent({
       initScroller();
 
       if (query["portal"] === "true") {
-        connect();
+        connect(parseInt(window.location.port));
       }
     });
     onBeforeUnmount(() => {
