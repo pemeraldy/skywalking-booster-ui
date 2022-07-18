@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <section class="app-main flex-v">
+  <section class="app-main flex-v" :style="portalStyle">
     <router-view v-slot="{ Component }" :key="$route.fullPath">
       <keep-alive>
         <component :is="Component" />
@@ -21,9 +21,36 @@ limitations under the License. -->
     </router-view>
   </section>
 </template>
+<script lang="ts" setup>
+import { ElMessage } from "element-plus";
+import { useAppStoreWithOut } from "@/store/modules/app";
+import { useRoute } from "vue-router";
+
+const { query } = useRoute();
+
+// eslint-disable-next-line no-undef
+let portalStyle = reactive({});
+if (query["portal"] === "true") {
+  // eslint-disable-next-line no-undef
+  portalStyle = reactive({
+    height: "100%",
+    "max-height": "350px",
+    "max-width": "963px",
+  });
+}
+
+const appStore = useAppStoreWithOut();
+if (!appStore.utc) {
+  const res = appStore.queryOAPTimeInfo();
+
+  if (res.errors) {
+    ElMessage.error(res.errors);
+  }
+}
+</script>
 <style lang="scss" scoped>
 .app-main {
-  height: calc(100% - 40px);
+  height: calc(100% - 39px);
   background: #f7f9fa;
 }
 </style>

@@ -35,7 +35,10 @@ interface DashboardState {
   activedGridItem: string;
   selectorStore: any;
   showTopology: boolean;
+  fullView: boolean;
   currentTabItems: LayoutConfig[];
+  showTraceTools: boolean;
+  showLogTools: boolean;
   dashboards: DashboardItem[];
   currentDashboard: Nullable<DashboardItem>;
   editMode: boolean;
@@ -52,6 +55,9 @@ export const dashboardStore = defineStore({
     activedGridItem: "",
     selectorStore: useSelectorStore(),
     showTopology: false,
+    showLogTools: false,
+    showTraceTools: false,
+    fullView: false,
     currentTabItems: [],
     dashboards: [],
     currentDashboard: null,
@@ -63,6 +69,9 @@ export const dashboardStore = defineStore({
     },
     setMode(mode: boolean) {
       this.editMode = mode;
+    },
+    setViewMode(mode: boolean) {
+      this.fullView = mode;
     },
     resetDashboards(list: DashboardItem[]) {
       this.dashboards = list;
@@ -245,6 +254,12 @@ export const dashboardStore = defineStore({
     },
     setEntity(type: string) {
       this.entity = type;
+    },
+    setTraceTools(show: boolean) {
+      this.showTraceTools = show;
+    },
+    setLogTools(show: boolean) {
+      this.showLogTools = show;
     },
     setTopology(show: boolean) {
       this.showTopology = show;

@@ -50,16 +50,13 @@ class Graphql {
   public params(variablesData: unknown): AxiosPromise<void> {
     return axios
       .post(
-        "/graphql",
+        "/graphql/dashboard",
         {
           query: query[this.queryData],
           variables: variablesData,
         },
         {
           cancelToken: cancelToken(),
-          headers: {
-            Authorization: "Basic c2t5d2Fsa2luZzpza3l3YWxraW5n",
-          },
         }
       )
       .then((res: AxiosResponse) => {

@@ -14,26 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import axios, { AxiosResponse } from "axios";
-import { cancelToken } from "@/utils/cancelToken";
-
-async function query(param: {
-  queryStr: string;
-  conditions: { [key: string]: unknown };
-}) {
-  const res: AxiosResponse = await axios.post(
-    "/graphql/dashboard",
-    { query: param.queryStr, variables: { ...param.conditions } },
-    {
-      cancelToken: cancelToken(),
-    }
-  );
-  if (res.data.errors) {
-    res.data.errors = res.data.errors
-      .map((e: { message: string }) => e.message)
-      .join(" ");
-  }
-  return res;
+export interface BrowserLogColumn {
+  label: string;
+  value: string;
 }
-
-export default query;
+export interface ServiceLogColumn {
+  label: string;
+  value: string;
+  isVisible?: boolean;
+  methode?: any;
+}

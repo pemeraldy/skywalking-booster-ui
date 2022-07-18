@@ -21,7 +21,9 @@ limitations under the License. -->
     :is-resizable="dashboardStore.editMode"
     v-if="dashboardStore.layout.length"
   >
+    <FullVue v-if="isFullview" :items="dashboardStore.layout"></FullVue>
     <grid-item
+      v-else
       v-for="item in dashboardStore.layout"
       :x="item.x"
       :y="item.y"
@@ -39,18 +41,24 @@ limitations under the License. -->
   <div class="no-data-tips" v-else>{{ t("noWidget") }}</div>
 </template>
 <script lang="ts">
-import { defineComponent, onBeforeUnmount } from "vue";
+import { defineComponent, computed, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useSelectorStore } from "@/store/modules/selectors";
 import { LayoutConfig } from "@/types/dashboard";
 import controls from "../controls/index";
 import { dragIgnoreFrom } from "../data";
+import FullVue from "@/components/FullVue.vue";
+import { useRoute } from "vue-router";
 
 export default defineComponent({
   name: "Layout",
-  components: { ...controls },
+  components: { ...controls, FullVue },
   setup() {
+    const { query } = useRoute();
+    const isFullview = computed(() => {
+      return query["fullview"] === "true";
+    });
     const { t } = useI18n();
     const dashboardStore = useDashboardStore();
     const selectorStore = useSelectorStore();
@@ -73,6 +81,7 @@ export default defineComponent({
       dashboardStore.setConfigPanel(false);
     });
     return {
+      isFullview,
       dashboardStore,
       clickGrid,
       t,

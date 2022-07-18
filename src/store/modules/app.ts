@@ -25,6 +25,8 @@ import { TimeType } from "@/constants/data";
 /*global Nullable*/
 interface AppState {
   durationRow: any;
+  minTraceDuration: string;
+  maxTraceDuration: string;
   utc: string;
   utcHour: number;
   utcMin: number;
@@ -46,6 +48,8 @@ export const appStore = defineStore({
       step: TimeType.MINUTE_TIME,
     },
     utc: "",
+    minTraceDuration: "",
+    maxTraceDuration: "",
     utcHour: 0,
     utcMin: 0,
     eventStack: [],
@@ -101,7 +105,8 @@ export const appStore = defineStore({
       for (let i = 0; i <= endUnix - startUnix; i += interval) {
         const temp: string = dateFormatTime(
           new Date(startUnix + i - utcSpace),
-          this.duration.step
+          this.duration.step,
+          false
         );
         timeIntervals.push(temp);
       }
@@ -109,6 +114,12 @@ export const appStore = defineStore({
     },
   },
   actions: {
+    setMinTraceDuration(data:string){
+      this.minTraceDuration = data
+    },
+    setMaxTraceDuration(data:string){
+      this.maxTraceDuration = data
+    },
     setDuration(data: Duration): void {
       this.durationRow = data;
       if ((window as any).axiosCancel.length !== 0) {

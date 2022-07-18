@@ -29,22 +29,20 @@ limitations under the License. -->
         <span>{{ t("delete") }}</span>
       </div>
     </el-popover>
-    <div class="header">
-      <Filter :needQuery="needQuery" />
-    </div>
     <div class="trace flex-h">
-      <TraceList />
-      <TraceDetail />
+      <TraceList @show:trace="showTraceDetails" v-if="traceListActive" />
+      <TraceDetail @show:list="showTraceList" v-if="!traceListActive" />
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import type { PropType } from "vue";
-import Filter from "../related/trace/Filter.vue";
+import { computed, onMounted, onBeforeUnmount } from "vue";
 import TraceList from "../related/trace/TraceList.vue";
 import TraceDetail from "../related/trace/Detail.vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/store/modules/dashboard";
+import { useTraceStore } from "@/store/modules/trace";
 
 /*global defineProps */
 const props = defineProps({
@@ -57,9 +55,26 @@ const props = defineProps({
 });
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
+const traceStore = useTraceStore();
+const traceListActive = computed(() => {
+  return traceStore.currentView === "traceList";
+});
 function removeWidget() {
   dashboardStore.removeControls(props.data);
 }
+function showTraceDetails() {
+  traceStore.currentView === "traceDetails";
+}
+function showTraceList() {
+  traceStore.currentView === "traceList";
+}
+
+onMounted(() => {
+  dashboardStore.setTraceTools(true);
+});
+onBeforeUnmount(() => {
+  dashboardStore.setTraceTools(false);
+});
 </script>
 <style lang="scss" scoped>
 .trace-wrapper {
@@ -98,7 +113,14 @@ function removeWidget() {
 
 .trace {
   width: 100%;
+  height: 100%;
   overflow: auto;
   min-width: 1200px;
+}
+</style>
+<style scoped>
+.header,
+.trace {
+  min-width: 100% !important;
 }
 </style>

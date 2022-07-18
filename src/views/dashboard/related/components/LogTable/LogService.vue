@@ -14,35 +14,41 @@ See the License for the specific language governing permissions and
 limitations under the License. -->
 
 <template>
-  <div @click="showSelectSpan" class="log-item">
-    <div v-for="(item, index) in columns" :key="index" :class="item.label">
+  <div
+    @click="showSelectSpan"
+    :class="{ 'd-flex': visibleColumns.length < 6 }"
+    class="log-item"
+  >
+    <div
+      v-for="(item, index) in visibleColumns"
+      :key="index"
+      :class="item.label"
+    >
       <span v-if="item.label === 'timestamp'">
         {{ dateFormat(data.timestamp) }}
       </span>
       <span v-else-if="item.label === 'tags'">
         {{ tags }}
       </span>
-      <!-- <router-link
-        v-else-if="item.label === 'traceId' && !noLink"
-        :to="{ name: 'trace', query: { traceid: data[item.label] } }"
-      >
-        <span :class="noLink ? '' : 'blue'">{{ data[item.label] }}</span>
-      </router-link> -->
       <span v-else>{{ data[item.label] }}</span>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import dayjs from "dayjs";
-import { ServiceLogConstants } from "./data";
+import { logStore } from "@/store/modules/log";
 /*global defineProps, defineEmits */
 const props = defineProps({
   data: { type: Object as any, default: () => ({}) },
   noLink: { type: Boolean, default: true },
 });
+const useLogStore = logStore();
+const columns = ref<any[]>(useLogStore.serviceLogColumn);
 const emit = defineEmits(["select"]);
-const columns = ServiceLogConstants;
+const visibleColumns = computed(() =>
+  columns.value.filter((column) => column.isVisible)
+);
 const tags = computed(() => {
   if (!props.data.tags) {
     return "";
@@ -55,6 +61,7 @@ function showSelectSpan() {
   emit("select", props.data);
 }
 </script>
+
 <style lang="scss" scoped>
 .log-item {
   white-space: nowrap;
@@ -116,5 +123,13 @@ function showSelectSpan() {
 .log-item > div.method {
   height: 100%;
   padding: 3px 8px;
+}
+
+.d-flex {
+  display: flex;
+
+  div {
+    flex-grow: 1;
+  }
 }
 </style>

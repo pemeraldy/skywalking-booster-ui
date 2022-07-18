@@ -16,6 +16,8 @@
  */
 import { defineStore } from "pinia";
 import { Instance, Endpoint, Service } from "@/types/selector";
+import { ServiceLogColumn, BrowserLogColumn } from "@/types/log-column";
+import { ServiceLogConstants, BrowserLogConstants } from "../data";
 import { store } from "@/store";
 import graphql from "@/graphql";
 import { AxiosResponse } from "axios";
@@ -27,6 +29,8 @@ interface LogState {
   services: Service[];
   instances: Instance[];
   endpoints: Endpoint[];
+  serviceLogColumn: ServiceLogColumn[];
+  browserLogColumn: BrowserLogColumn[];
   conditions: any;
   selectorStore: any;
   supportQueryLogsByKeywords: boolean;
@@ -44,12 +48,33 @@ export const logStore = defineStore({
       queryDuration: useAppStoreWithOut().durationTime,
       paging: { pageNum: 1, pageSize: 15 },
     },
+    serviceLogColumn: [...ServiceLogConstants],
+    browserLogColumn: [...BrowserLogConstants],
     supportQueryLogsByKeywords: true,
     selectorStore: useSelectorStore(),
     logs: [],
     loadLogs: false,
   }),
   actions: {
+    showColumns(columnsLabel: string) {
+      this.serviceLogColumn.forEach((col: any) => {
+        if (columnsLabel === col.value) {
+          col.isVisible = true;
+        }
+      });
+    },
+    hideColumns(columnsLabel: string) {
+      this.serviceLogColumn.forEach((col: any) => {
+        if (columnsLabel === col.value) {
+          col.isVisible = false;
+        }
+      });
+    },
+    toggleAllColumns(status: boolean) {
+      this.serviceLogColumn.forEach((col: any) => {
+        col.isVisible = status;
+      });
+    },
     setLogCondition(data: any) {
       this.conditions = { ...this.conditions, ...data };
     },

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <div class="flex-h tab-header">
+  <div ref="tabRef" class="flex-h tab-header">
     <div class="tabs scroll_bar_style" @click="handleClick">
       <span
         v-for="(child, idx) in data.children || []"
@@ -80,31 +80,74 @@ limitations under the License. -->
       :is-resizable="dashboardStore.editMode"
       @layout-updated="layoutUpdatedEvent"
     >
-      <grid-item
-        v-for="item in dashboardStore.currentTabItems"
-        :x="item.x"
-        :y="item.y"
-        :w="item.w"
-        :h="item.h"
-        :i="item.i"
-        :key="item.i"
-        @click="clickTabGrid($event, item)"
-        :class="{ active: activeTabWidget === item.i }"
-        :drag-ignore-from="dragIgnoreFrom"
+      <div
+        ref="tabObserveContainer"
+        class="scroll-tab-container"
+        v-if="dashboardStore.fullView"
       >
-        <component
-          :is="item.type"
-          :data="item"
-          :activeIndex="`${data.i}-${activeTabIndex}-${item.i}`"
-          :needQuery="needQuery"
-        />
-      </grid-item>
+        <div
+          v-if="dashboardStore.currentTabItems.length > 1"
+          class="scroll-handler__wrapper"
+        >
+          <div
+            @click="scrollToGraph(item.i, index)"
+            v-for="(item, index) in dashboardStore.currentTabItems"
+            :key="item.i"
+            :class="[currentItem === index ? 'active' : '']"
+            class="scroll-to"
+          ></div>
+        </div>
+        <div
+          class="tabitem"
+          :id="`tabitem${item.i}`"
+          v-for="item in dashboardStore.currentTabItems"
+          :key="item.i"
+        >
+          <component
+            :is="item.type"
+            :data="item"
+            :activeIndex="`${data.i}-${activeTabIndex}-${item.i}`"
+            :needQuery="needQuery"
+            @click="clickTabGrid($event, item)"
+            :class="{ active: activeTabWidget === item.i }"
+          />
+        </div>
+      </div>
+
+      <template v-else>
+        <grid-item
+          v-for="item in dashboardStore.currentTabItems"
+          :x="item.x"
+          :y="item.y"
+          :w="item.w"
+          :h="item.h"
+          :i="item.i"
+          :key="item.i"
+          @click="clickTabGrid($event, item)"
+          :class="{ active: activeTabWidget === item.i }"
+          :drag-ignore-from="dragIgnoreFrom"
+        >
+          <component
+            :is="item.type"
+            :data="item"
+            :activeIndex="`${data.i}-${activeTabIndex}-${item.i}`"
+            :needQuery="needQuery"
+          />
+        </grid-item>
+      </template>
     </grid-layout>
     <div class="no-data-tips" v-else>{{ t("noWidget") }}</div>
   </div>
 </template>
 <script lang="ts">
-import { ref, watch, defineComponent, toRefs } from "vue";
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  defineComponent,
+  toRefs,
+} from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import type { PropType } from "vue";
@@ -154,17 +197,86 @@ export default defineComponent({
     const editTabIndex = ref<number>(NaN); // edit tab item name
     const canEditTabName = ref<boolean>(false);
     const needQuery = ref<boolean>(false);
+    const showTools = ref<boolean>(false);
+    const tabRef = ref<any>("");
+    const tabObserveContainer = ref<any>(null);
+    const arrayOfItems = ref<Element[]>([]);
+    const currentItem = ref<number>(0);
+    const isScrolling = ref(false);
 
-    dashboardStore.setActiveTabIndex(activeTabIndex);
     const l = dashboardStore.layout.findIndex(
       (d: LayoutConfig) => d.i === props.data.i
     );
+
+    dashboardStore.setActiveTabIndex(activeTabIndex);
     if (dashboardStore.layout[l].children.length) {
       dashboardStore.setCurrentTabItems(
         dashboardStore.layout[l].children[activeTabIndex.value].children
       );
       dashboardStore.setActiveTabIndex(activeTabIndex.value, props.data.i);
+      setTimeout(() => {
+        observeItems();
+      }, 1500);
     }
+    function scrollToGraph(e: any, index: number) {
+      document?.getElementById(`tabitem${e}`)?.scrollIntoView();
+      currentItem.value = index;
+    }
+
+    function observeItems(kill = false) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((element) => {
+          if (element.isIntersecting && element.intersectionRatio > 0) {
+            setTimeout(() => {
+              // currentItem.value = element.target.id;
+            }, 200);
+          }
+        });
+      });
+      document.querySelectorAll(".tabitem").forEach((element) => {
+        arrayOfItems.value.push(element);
+        observer.observe(element);
+      });
+      if (kill) {
+        document.querySelectorAll(".tabitem").forEach((element) => {
+          observer.unobserve(element);
+        });
+      }
+    }
+    function scrollUp() {
+      if (currentItem.value > 0) {
+        currentItem.value--;
+        scrollTo(currentItem.value);
+      } else if (currentItem.value === 0) {
+        isScrolling.value = false;
+      }
+    }
+    function scrollDown() {
+      if (currentItem.value < arrayOfItems?.value?.length - 1) {
+        currentItem.value++;
+        scrollTo(currentItem.value);
+      } else if (currentItem.value === arrayOfItems?.value?.length - 1) {
+        isScrolling.value = true;
+        currentItem.value = 0;
+        scrollTo(currentItem.value);
+      }
+    }
+    function scrollTo(index: number) {
+      arrayOfItems.value[index]?.scrollIntoView();
+      if (isScrolling.value) {
+        setTimeout(() => {
+          isScrolling.value = false;
+        }, 800);
+      }
+    }
+    watch(
+      () => dashboardStore.currentTabItems,
+      () => {
+        setTimeout(() => {
+          observeItems();
+        }, 500);
+      }
+    );
 
     function clickTabs(e: Event, idx: number) {
       e.stopPropagation();
@@ -233,6 +345,19 @@ export default defineComponent({
         dashboardStore.layout[l].children[activeTabIndex.value].children
       );
     }
+
+    function initScrollWatcher() {
+      tabObserveContainer?.value?.addEventListener("wheel", (e: WheelEvent) => {
+        if (isScrolling.value === false) {
+          isScrolling.value = true;
+          if (e.deltaY < 0) {
+            scrollUp();
+          } else {
+            scrollDown();
+          }
+        }
+      });
+    }
     function copyLink() {
       let path = "";
       if (route.params.activeTabIndex === undefined) {
@@ -259,7 +384,17 @@ export default defineComponent({
         }
       }
     );
+    onMounted(() => {
+      initScrollWatcher();
+      tabRef?.value["parentElement"]?.classList?.toggle("item");
+    });
+    onBeforeUnmount(() => {
+      observeItems(true);
+    });
     return {
+      currentItem,
+      tabObserveContainer,
+      scrollToGraph,
       handleClick,
       layoutUpdatedEvent,
       clickTabGrid,
@@ -270,6 +405,7 @@ export default defineComponent({
       clickTabs,
       copyLink,
       ...toRefs(props),
+      tabRef,
       activeTabWidget,
       dashboardStore,
       activeTabIndex,
@@ -283,6 +419,60 @@ export default defineComponent({
 });
 </script>
 <style lang="scss" scoped>
+.tab-layout::-webkit-scrollbar {
+  display: none !important;
+}
+
+.scroll-tab-container {
+  position: relative;
+  height: 80vh;
+  display: block;
+  scroll-behavior: smooth;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000;
+  overflow: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tabitem {
+  scroll-snap-align: start;
+  height: 100%;
+  margin: 0 0;
+}
+
+.scroll-handler__wrapper {
+  z-index: 20;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  right: 0;
+  top: 40vh;
+  height: auto;
+  width: 17px;
+
+  .scroll-to {
+    opacity: 0.5;
+    width: 10px;
+    height: 10px;
+    margin: 5px 0;
+    border-radius: 50%;
+    cursor: pointer;
+    background: #4f4f4f;
+  }
+
+  .scroll-to.active {
+    opacity: 1;
+    padding: 6px;
+    background: #252a2f;
+  }
+}
+
 .tabs {
   height: 40px;
   color: #ccc;
@@ -335,6 +525,10 @@ export default defineComponent({
       color: #409eff;
     }
   }
+}
+
+.tab-header .tabs .span.active {
+  color: red !important;
 }
 
 .operations {

@@ -20,7 +20,7 @@ limitations under the License. -->
     @click="handleClick"
     :style="{ height: dashboardStore.editMode ? 'calc(100% - 45px)' : '100%' }"
   >
-    <grid-layout />
+    <FullVue :items="dashboardStore.layout"></FullVue>
     <el-dialog
       v-model="dashboardStore.showConfig"
       :title="t('editGraph')"
@@ -41,10 +41,12 @@ import Tool from "./panel/Tool.vue";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import { useAppStoreWithOut } from "@/store/modules/app";
 import Configuration from "./configuration";
+import controls from "./controls/index";
+import FullVue from "@/components/FullVue.vue";
 
 export default defineComponent({
   name: "Dashboard",
-  components: { ...Configuration, GridLayout, Tool },
+  components: { FullVue, ...Configuration, GridLayout, Tool, ...controls },
   setup() {
     const dashboardStore = useDashboardStore();
     const appStore = useAppStoreWithOut();
@@ -52,6 +54,7 @@ export default defineComponent({
     const p = useRoute().params;
     const layoutKey = ref<string>(`${p.layerId}_${p.entity}_${p.name}`);
     setTemplate();
+    const currentItem = ref("");
     async function setTemplate() {
       await dashboardStore.setDashboards();
 
@@ -68,6 +71,7 @@ export default defineComponent({
       const layout: any = c.configuration || {};
       dashboardStore.setLayout(layout.children || []);
       appStore.setPageTitle(layout.name);
+
       if (p.entity) {
         dashboardStore.setCurrentDashboard({
           layer: p.layerId,
@@ -78,31 +82,21 @@ export default defineComponent({
         });
       }
     }
-    function handleClick(e: any) {
-      e.stopPropagation();
-      if (e.target.className === "ds-main") {
-        dashboardStore.activeGridItem("");
-        dashboardStore.selectWidget(null);
-      }
-    }
-
     return {
       t,
-      handleClick,
       dashboardStore,
+      currentItem,
     };
   },
 });
 </script>
+
 <style lang="scss" scoped>
 .ds-main {
   overflow: auto;
 }
-.ds-main::-webkit-scrollbar {
-  display: none;
-}
-.ds-main{
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.full-view__scroll {
+  height: 60vh;
+  width: 100%;
 }
 </style>
