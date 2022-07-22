@@ -27,7 +27,7 @@ module.exports = {
     proxy: {
       "/graphql": {
         target: `${
-          process.env.SW_PROXY_TARGET || "https://demo.sourceplus.plus:12800"
+          process.env.SW_PROXY_TARGET || "https://demo.sourceplus.plus"
         }`,
         changeOrigin: true,
       },
