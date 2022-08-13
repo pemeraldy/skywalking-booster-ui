@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <Graph :option="option" />
+  <Graph :option="option" @select="clickEvent" :filters="config.filters" />
 </template>
 <script lang="ts" setup>
 import { computed } from "vue";
 import type { PropType } from "vue";
-import { Event } from "@/types/events";
-import { BarConfig } from "@/types/dashboard";
+import { BarConfig, EventParams } from "@/types/dashboard";
 
-/*global defineProps */
+/*global defineProps, defineEmits */
+const emits = defineEmits(["click"]);
 const props = defineProps({
   data: {
     type: Object as PropType<{ [key: string]: number[] }>,
@@ -29,9 +29,20 @@ const props = defineProps({
   },
   intervalTime: { type: Array as PropType<string[]>, default: () => [] },
   theme: { type: String, default: "light" },
-  itemEvents: { type: Array as PropType<Event[]>, default: () => [] },
   config: {
-    type: Object as PropType<BarConfig>,
+    type: Object as PropType<
+      BarConfig & {
+        filters: {
+          sourceId: string;
+          duration: {
+            startTime: string;
+            endTime: string;
+          };
+          isRange: boolean;
+          dataIndex?: number;
+        };
+      } & { id: string }
+    >,
     default: () => ({}),
   },
 });
@@ -41,30 +52,7 @@ function getOption() {
   const keys = Object.keys(props.data || {}).filter(
     (i: any) => Array.isArray(props.data[i]) && props.data[i].length
   );
-  const startP = keys.length > 1 ? 50 : 15;
-  const diff = 15;
-  const markAreas = (props.itemEvents || []).map(
-    (event: Event, index: number) => {
-      return [
-        {
-          name: `${event.name}:${event.type}`,
-          xAxis: event.startTime,
-          y: startP + diff * index,
-          itemStyle: {
-            borderWidth: 2,
-            borderColor: event.type === "Normal" ? "#5dc859" : "#FF0087",
-            color: event.type === "Normal" ? "#5dc859" : "#FF0087",
-          },
-        },
-        {
-          name: event.message,
-          xAxis: event.endTime,
-          y: startP + diff * (index + 1),
-        },
-      ];
-    }
-  );
-  const temp = keys.map((i: string, index: number) => {
+  const temp = keys.map((i: string) => {
     if (!props.intervalTime) {
       return;
     }
@@ -85,23 +73,6 @@ function getOption() {
       backgroundStyle: {
         color: "rgba(180, 180, 180, 0.1)",
       },
-      markArea:
-        index === 0
-          ? {
-              silent: false,
-              data: markAreas,
-              label: {
-                show: false,
-                width: 60,
-              },
-              emphasis: {
-                label: {
-                  position: "bottom",
-                  show: true,
-                },
-              },
-            }
-          : undefined,
     };
   });
   let color: string[] = [];
@@ -129,7 +100,6 @@ function getOption() {
       trigger: "axis",
       zlevel: 1000,
       z: 60,
-      backgroundColor: "rgb(50,50,50)",
       confine: true,
       textStyle: {
         fontSize: 13,
@@ -181,5 +151,8 @@ function getOption() {
     },
     series: temp,
   };
+}
+function clickEvent(params: EventParams) {
+  emits("click", params);
 }
 </script>

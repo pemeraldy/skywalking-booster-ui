@@ -46,6 +46,7 @@ limitations under the License. -->
           :intervalTime="intervalTime"
           :colMetrics="colMetrics"
           :config="config"
+          v-if="colMetrics.length"
         />
       </el-table>
     </div>
@@ -96,7 +97,9 @@ const dashboardStore = useDashboardStore();
 const chartLoading = ref<boolean>(false);
 const endpoints = ref<Endpoint[]>([]);
 const searchText = ref<string>("");
-const colMetrics = computed(() => props.config.metrics.map((d: string) => d));
+const colMetrics = computed(() =>
+  (props.config.metrics || []).filter((d: string) => d)
+);
 
 if (props.needQuery) {
   queryEndpoints();
@@ -119,7 +122,7 @@ async function queryEndpointMetrics(currentPods: Endpoint[]) {
   if (!currentPods.length) {
     return;
   }
-  const metrics = (props.config.metrics || []).filter((d: string) => d);
+  const metrics = props.config.metrics || [];
   const metricTypes = props.config.metricTypes || [];
   if (metrics.length && metrics[0] && metricTypes.length && metricTypes[0]) {
     const params = await useQueryPodsMetrics(
@@ -144,17 +147,17 @@ async function queryEndpointMetrics(currentPods: Endpoint[]) {
   endpoints.value = currentPods;
 }
 function clickEndpoint(scope: any) {
-  const d = getDashboard({
+  const { dashboard } = getDashboard({
     name: props.config.dashboardName,
     layer: dashboardStore.layerId,
     entity: EntityType[2].value,
   });
-  if (!d) {
+  if (!dashboard) {
     ElMessage.error("No this dashboard");
     return;
   }
   router.push(
-    `/dashboard/${d.layer}/${d.entity}/${selectorStore.currentService.id}/${scope.row.id}/${d.name}`
+    `/dashboard/${dashboard.layer}/${dashboard.entity}/${selectorStore.currentService.id}/${scope.row.id}/${dashboard.name}`
   );
 }
 async function searchList() {

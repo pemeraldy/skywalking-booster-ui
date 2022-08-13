@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <div class="flex-h" :class="{ light: theme === 'light' }">
+  <div class="flex-h">
     <div class="flex-h items-center mr-5">
-      <span class="sm grey" v-show="theme === 'dark'">{{ t("tags") }}: </span>
+      <span class="sm grey">{{ t("tags") }}: </span>
       <span v-if="tagsList.length" class="trace-tags">
         <!-- :style="type === 'LOG' ? `min-width: 122px;` : ''" -->
         <span class="selected" v-for="(item, index) in tagsList" :key="index">
@@ -59,19 +59,36 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, defineExpose } from "vue";
+import { ref, defineExpose, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useTraceStore } from "@/store/modules/trace";
+import { useLogStore } from "@/store/modules/log";
+import { ElMessage } from "element-plus";
+import { useAppStoreWithOut } from "@/store/modules/app";
 
 /*global defineEmits, defineProps */
 const emit = defineEmits(["update"]);
 
-defineProps({
+const props = defineProps({
   type: { type: String, default: "TRACE" },
 });
+const traceStore = useTraceStore();
+const logStore = useLogStore();
+const appStore = useAppStoreWithOut();
 const { t } = useI18n();
-const theme = ref<string>("dark");
 const tags = ref<string>("");
 const tagsList = ref<string[]>([]);
+const tagArr = ref<string[]>([]);
+const tagList = ref<string[]>([]);
+const tagKeys = ref<string[]>([]);
+// const visible = ref<boolean>(false);
+// const tipsMap = {
+//   LOG: "logTagsTip",
+//   TRACE: "traceTagsTip",
+//   ALARM: "alarmTagsTip",
+// };
+
+fetchTagKeys();
 
 defineExpose({
   tagsList,
@@ -102,6 +119,73 @@ function updateTags() {
   });
   emit("update", { tagsMap, tagsList: tagsList.value });
 }
+async function fetchTagKeys() {
+  let resp: any = {};
+  if (props.type === "TRACE") {
+    resp = await traceStore.getTagKeys();
+  } else {
+    resp = await logStore.getLogTagKeys();
+  }
+
+  if (resp.errors) {
+    ElMessage.error(resp.errors);
+    return;
+  }
+  tagArr.value = resp.data.tagKeys;
+  tagKeys.value = resp.data.tagKeys;
+  searchTags();
+}
+
+async function fetchTagValues() {
+  const param = tags.value.split("=")[0];
+  let resp: any = {};
+  if (props.type === "TRACE") {
+    resp = await traceStore.getTagValues(param);
+  } else {
+    resp = await logStore.getLogTagValues(param);
+  }
+
+  if (resp.errors) {
+    ElMessage.error(resp.errors);
+    return;
+  }
+  tagArr.value = resp.data.tagValues;
+  searchTags();
+}
+
+function selectTag(item: string) {
+  if (tags.value.includes("=")) {
+    const key = tags.value.split("=")[0];
+    tags.value = key + "=" + item;
+    addLabels();
+    tagArr.value = tagKeys.value;
+    searchTags();
+    return;
+  }
+  tags.value = item + "=";
+  fetchTagValues();
+}
+
+function searchTags() {
+  if (!tags.value) {
+    tagList.value = tagArr.value;
+    return;
+  }
+  let search = "";
+  if (tags.value.includes("=")) {
+    search = tags.value.split("=")[1];
+  } else {
+    search = tags.value;
+  }
+  tagList.value = tagArr.value.filter((d: string) => d.includes(search));
+}
+
+watch(
+  () => appStore.durationTime,
+  () => {
+    fetchTagKeys();
+  }
+);
 </script>
 <style lang="scss" scoped>
 .items-center {
@@ -131,7 +215,6 @@ function updateTags() {
   padding: 2px 5px;
   border-radius: 3px;
   width: 250px;
-  margin-right: 3px;
 }
 
 .remove-icon {
@@ -140,8 +223,23 @@ function updateTags() {
   cursor: pointer;
 }
 
+.tag-item {
+  display: inline-block;
+  min-width: 210px;
+  cursor: pointer;
+  margin-top: 10px;
+
+  &:hover {
+    color: #409eff;
+  }
+}
+
 .tags-tip {
   color: #a7aebb;
+}
+
+.link-tips {
+  display: inline-block;
 }
 
 .light {
@@ -158,5 +256,11 @@ function updateTags() {
 
 .icon-help {
   cursor: pointer;
+}
+
+.content {
+  width: 300px;
+  max-height: 400px;
+  overflow: auto;
 }
 </style>

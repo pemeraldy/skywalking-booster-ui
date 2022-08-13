@@ -36,18 +36,34 @@ export interface LayoutConfig {
   children?: { name: string; children: LayoutConfig[] }[];
   activedTabIndex?: number;
   metricConfig?: MetricConfigOpt[];
+  id?: string;
+  associate?: { widgetId: string }[];
+  eventAssociate?: boolean;
+  filters?: {
+    dataIndex: number;
+    sourceId: string;
+    isRange?: boolean;
+    duration?: {
+      startTime: string;
+      endTime: string;
+    };
+    traceId?: string;
+    spanId?: string;
+    segmentId?: string;
+  };
 }
 
 export type MetricConfigOpt = {
-  unit: string;
-  label: string;
-  calculation: string;
+  unit?: string;
+  label?: string;
+  calculation?: string;
   labelsIndex: string;
   sortOrder: string;
   topN?: number;
 };
 
 export interface WidgetConfig {
+  name?: string;
   title?: string;
   tips?: string;
 }
@@ -137,3 +153,15 @@ export interface TopologyConfig {
   depth?: number;
   showDepth?: boolean;
 }
+export type EventParams = {
+  componentType: string;
+  seriesType: string;
+  seriesIndex: number;
+  seriesName: string;
+  name: string;
+  dataIndex: number;
+  data: Record<string, unknown>;
+  dataType: string;
+  value: number | number[];
+  color: string;
+};

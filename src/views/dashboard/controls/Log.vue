@@ -31,25 +31,33 @@ limitations under the License. -->
     </el-popover>
     <!-- <div class="header">
     </div> -->
+    <div class="header">
+      <Header :needQuery="needQuery" :data="data" />
+    </div>
     <div class="log">
       <List />
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import type { onBeforeUnmount, onMounted } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
+import { provide } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import List from "../related/log/List.vue";
+import { LayoutConfig } from "@/types/dashboard";
+import type { PropType } from "vue";
 
 /*global defineProps */
 const props = defineProps({
   data: {
-    type: Object,
-    default: () => ({}),
+    type: Object as PropType<LayoutConfig>,
+    default: () => ({ graph: {} }),
   },
   activeIndex: { type: String, default: "" },
+  needQuery: { type: Boolean, default: true },
 });
+provide("options", props.data);
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 
@@ -69,18 +77,21 @@ onBeforeUnmount(() => {
   height: 100%;
   font-size: 12px;
   position: relative;
+  overflow: auto;
 }
 
 .delete {
   position: absolute;
   top: 5px;
   right: 3px;
+  z-index: 1000;
 }
 
 .header {
   padding: 10px;
   font-size: 12px;
   border-bottom: 1px solid #dcdfe6;
+  min-width: 1024px;
 }
 
 .tools {
@@ -98,6 +109,5 @@ onBeforeUnmount(() => {
 
 .log {
   width: 100%;
-  overflow: auto;
 }
 </style>

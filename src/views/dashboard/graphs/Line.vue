@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 <template>
-  <Graph :option="option" />
+  <Graph :option="option" @select="clickEvent" :filters="config.filters" />
 </template>
 <script lang="ts" setup>
 import { computed } from "vue";
 import type { PropType } from "vue";
-import { Event } from "@/types/events";
-import { LineConfig } from "@/types/dashboard";
+import { LineConfig, EventParams } from "@/types/dashboard";
 
-/*global defineProps */
+/*global defineProps, defineEmits */
+const emits = defineEmits(["click"]);
 const props = defineProps({
   data: {
     type: Object as PropType<{ [key: string]: number[] }>,
@@ -29,9 +29,20 @@ const props = defineProps({
   },
   intervalTime: { type: Array as PropType<string[]>, default: () => [] },
   theme: { type: String, default: "light" },
-  itemEvents: { type: Array as PropType<Event[]>, default: () => [] },
   config: {
-    type: Object as PropType<LineConfig>,
+    type: Object as PropType<
+      LineConfig & {
+        filters: {
+          sourceId: string;
+          duration: {
+            startTime: string;
+            endTime: string;
+          };
+          isRange: boolean;
+          dataIndex?: number;
+        };
+      } & { id: string }
+    >,
     default: () => ({
       step: false,
       smooth: false,
@@ -49,30 +60,7 @@ function getOption() {
   const keys = Object.keys(props.data || {}).filter(
     (i: any) => Array.isArray(props.data[i]) && props.data[i].length
   );
-  const startP = keys.length > 1 ? 50 : 15;
-  const diff = 10;
-  const markAreas = (props.itemEvents || []).map(
-    (event: Event, index: number) => {
-      return [
-        {
-          name: `${event.name}:${event.type}`,
-          xAxis: event.startTime,
-          y: startP + diff * index,
-          itemStyle: {
-            borderWidth: 2,
-            borderColor: event.type === "Normal" ? "#5dc859" : "#FF0087",
-            color: event.type === "Normal" ? "#5dc859" : "#FF0087",
-          },
-        },
-        {
-          name: event.message,
-          xAxis: event.endTime,
-          y: startP + diff * (index + 1),
-        },
-      ];
-    }
-  );
-  const temp = keys.map((i: any, index: number) => {
+  const temp = keys.map((i: any) => {
     const serie: any = {
       data: props.data[i].map((item: any, itemIndex: number) => [
         props.intervalTime[itemIndex],
@@ -81,7 +69,7 @@ function getOption() {
       name: i,
       type: "line",
       symbol: "circle",
-      symbolSize: 6,
+      symbolSize: 8,
       showSymbol: props.config.showSymbol,
       step: props.config.step,
       smooth: props.config.smooth,
@@ -89,23 +77,6 @@ function getOption() {
         width: 1.5,
         type: "solid",
       },
-      markArea:
-        index === 0
-          ? {
-              silent: false,
-              data: markAreas,
-              label: {
-                show: false,
-                width: 60,
-              },
-              emphasis: {
-                label: {
-                  position: "bottom",
-                  show: true,
-                },
-              },
-            }
-          : undefined,
     };
     if (props.config.type === "Area") {
       serie.areaStyle = {
@@ -136,7 +107,6 @@ function getOption() {
   }
   const tooltip = {
     trigger: "axis",
-    backgroundColor: "rgb(50,50,50)",
     textStyle: {
       fontSize: 12,
       color: "#A9B7C6",
@@ -192,7 +162,7 @@ function getOption() {
       axisLabel: {
         color: "#808080",
         fontSize: "13",
-        formatter: function (value) {
+        formatter: function (value:any) {
           //todo: should only substr if date is current date
           return (value as string).substring(0, value.indexOf("\n"));
         },
@@ -212,5 +182,9 @@ function getOption() {
     },
     series: temp,
   };
+}
+
+function clickEvent(params: EventParams) {
+  emits("click", params);
 }
 </script>

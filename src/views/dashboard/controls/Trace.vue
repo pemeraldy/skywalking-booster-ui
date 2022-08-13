@@ -29,6 +29,9 @@ limitations under the License. -->
         <span>{{ t("delete") }}</span>
       </div>
     </el-popover>
+    <div class="header">
+      <Filter :needQuery="needQuery" :data="data" />
+    </div>
     <div class="trace flex-h">
       <TraceList @show:trace="showTraceDetails" v-if="traceListActive" />
       <TraceDetail @show:list="showTraceList" v-if="!traceListActive" />
@@ -36,7 +39,10 @@ limitations under the License. -->
   </div>
 </template>
 <script lang="ts" setup>
-import type { PropType, computed, onMounted, onBeforeUnmount } from "vue";
+import { computed, onMounted, onBeforeUnmount } from "vue";
+import { provide } from "vue";
+import type { PropType } from "vue";
+import Filter from "../related/trace/Filter.vue";
 import TraceList from "../related/trace/TraceList.vue";
 import TraceDetail from "../related/trace/Detail.vue";
 import { useI18n } from "vue-i18n";
@@ -50,7 +56,9 @@ const props = defineProps({
     default: () => ({ graph: {} }),
   },
   activeIndex: { type: String, default: "" },
+  needQuery: { type: Boolean, default: true },
 });
+provide("options", props.data);
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const traceStore = useTraceStore();
@@ -80,6 +88,7 @@ onBeforeUnmount(() => {
   height: 100%;
   font-size: 12px;
   position: relative;
+  overflow: auto;
 }
 
 .delete {
@@ -92,6 +101,7 @@ onBeforeUnmount(() => {
   padding: 10px;
   font-size: 12px;
   border-bottom: 1px solid #dcdfe6;
+  min-width: 1200px;
 }
 
 .tools {
@@ -111,5 +121,6 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   overflow: auto;
+  min-width: 1200px;
 }
 </style>

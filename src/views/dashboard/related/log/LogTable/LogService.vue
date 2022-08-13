@@ -30,27 +30,34 @@ limitations under the License. -->
       <span v-else-if="item.label === 'tags'">
         {{ tags }}
       </span>
-      <router-link
+      <span
         v-else-if="item.label === 'traceId' && !noLink"
-        :to="{ name: 'trace', query: { traceid: data[item.label] } }"
+        :class="noLink ? '' : 'blue'"
       >
-        <span :class="noLink ? '' : 'blue'">{{ data[item.label] }}</span>
-      </router-link>
+        {{ data[item.label] }}
+      </span>
       <span v-else>{{ data[item.label] }}</span>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, inject } from "vue";
 import dayjs from "dayjs";
 import { logStore } from "@/store/modules/log";
-/*global defineProps, defineEmits */
+import { ServiceLogConstants } from "./data";
+import getDashboard from "@/hooks/useDashboardsSession";
+import { useDashboardStore } from "@/store/modules/dashboard";
+import { LayoutConfig } from "@/types/dashboard";
+
+/*global defineProps, defineEmits, Recordable */
 const props = defineProps({
   data: { type: Object as any, default: () => ({}) },
   noLink: { type: Boolean, default: true },
 });
 const useLogStore = logStore();
 const columns = ref<any[]>(useLogStore.serviceLogColumn);
+const dashboardStore = useDashboardStore();
+const options: Recordable<LayoutConfig> = inject("options") || {};
 const emit = defineEmits(["select"]);
 const visibleColumns = computed(() =>
   columns.value.filter((column) => column.isVisible)
@@ -59,13 +66,37 @@ const tags = computed(() => {
   if (!props.data.tags) {
     return "";
   }
-  return String(props.data.tags.map((d: any) => `${d.key}=${d.value}`));
+  return String(
+    props.data.tags.map(
+      (d: { key: string; value: string }) => `${d.key}=${d.value}`
+    )
+  );
 });
 const dateFormat = (date: number, pattern = "YYYY-MM-DD HH:mm:ss") =>
   dayjs(date).format(pattern);
-function showSelectSpan() {
-  emit("select", props.data);
-}
+
+// function selectLog(label: string, value: string) {
+//   if (label === "traceId") {
+//     if (!value) {
+//       emit("select", props.data);
+//       return;
+//     }
+//     linkTrace(value);
+//     return;
+//   }
+//   emit("select", props.data);
+// }
+// function linkTrace(id: string) {
+//   const { associationWidget } = getDashboard(dashboardStore.currentDashboard);
+//   associationWidget(
+//     (options.id as any) || "",
+//     {
+//       sourceId: options.id || "",
+//       traceId: id,
+//     },
+//     "Trace"
+//   );
+// }
 </script>
 
 <style lang="scss" scoped>
@@ -73,11 +104,9 @@ function showSelectSpan() {
   white-space: nowrap;
   position: relative;
   cursor: pointer;
-
   .traceId {
     width: 390px;
     cursor: pointer;
-
     span {
       display: inline-block;
       width: 100%;
@@ -131,9 +160,9 @@ function showSelectSpan() {
   padding: 3px 8px;
 }
 
-.d-flex{
+.d-flex {
   display: flex;
-  div{
+  div {
     flex-grow: 1;
   }
 }

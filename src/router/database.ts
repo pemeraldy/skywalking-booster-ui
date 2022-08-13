@@ -26,16 +26,24 @@ export const routesDatabase: Array<RouteRecordRaw> = [
       icon: "storage",
       hasGroup: true,
     },
-    redirect: "/database",
+    redirect: "/mySQL",
     component: Layout,
     children: [
       {
-        path: "/database",
-        name: "Database",
+        path: "/mySQL",
+        name: "MySQL",
         meta: {
-          title: "virtualDatabase",
-          headPath: "/database",
+          title: "mySQL",
           exact: true,
+        },
+        component: () =>
+          import(/* webpackChunkName: "layer" */ "@/views/Layer.vue"),
+      },
+      {
+        path: "/mySQL/tab/:activeTabIndex",
+        name: "MySQLActiveTabIndex",
+        meta: {
+          notShow: true,
         },
         component: () =>
           import(/* webpackChunkName: "layer" */ "@/views/Layer.vue"),

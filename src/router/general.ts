@@ -24,7 +24,7 @@ export const routesGen: Array<RouteRecordRaw> = [
     meta: {
       title: "general",
       icon: "chart",
-      hasGroup: false,
+      hasGroup: true,
       exact: true,
     },
     component: Layout,
@@ -33,12 +33,40 @@ export const routesGen: Array<RouteRecordRaw> = [
         path: "/general",
         name: "GeneralServices",
         meta: {
-          title: "services",
-          headPath: "/general/service",
           exact: true,
+          title: "services",
         },
         component: () =>
           import(/* webpackChunkName: "layers" */ "@/views/Layer.vue"),
+      },
+      {
+        path: "/general/tab/:activeTabIndex",
+        name: "GeneralServicesActiveTabIndex",
+        meta: {
+          exact: true,
+          notShow: true,
+        },
+        component: () =>
+          import(/* webpackChunkName: "layers" */ "@/views/Layer.vue"),
+      },
+      {
+        path: "/database",
+        name: "VirtualDatabase",
+        meta: {
+          title: "virtualDatabase",
+          exact: true,
+        },
+        component: () =>
+          import(/* webpackChunkName: "layer" */ "@/views/Layer.vue"),
+      },
+      {
+        path: "/database/tab/:activeTabIndex",
+        name: "VirtualDatabaseActiveTabIndex",
+        meta: {
+          notShow: true,
+        },
+        component: () =>
+          import(/* webpackChunkName: "layer" */ "@/views/Layer.vue"),
       },
     ],
   },

@@ -43,6 +43,7 @@ limitations under the License. -->
           </template>
         </el-table-column>
         <ColumnGraph
+          v-if="colMetrics.length"
           :intervalTime="intervalTime"
           :colMetrics="colMetrics"
           :config="config"
@@ -126,7 +127,9 @@ const chartLoading = ref<boolean>(false);
 const instances = ref<Instance[]>([]); // current instances
 const pageSize = 10;
 const searchText = ref<string>("");
-const colMetrics = computed(() => props.config.metrics.map((d: string) => d));
+const colMetrics = computed(() =>
+  (props.config.metrics || []).filter((d: string) => d)
+);
 if (props.needQuery) {
   queryInstance();
 }
@@ -151,7 +154,8 @@ async function queryInstanceMetrics(currentInstances: Instance[]) {
   if (!currentInstances.length) {
     return;
   }
-  const { metrics, metricTypes } = props.config;
+  const metrics = props.config.metrics || [];
+  const metricTypes = props.config.metricTypes || [];
 
   if (metrics.length && metrics[0] && metricTypes.length && metricTypes[0]) {
     const params = await useQueryPodsMetrics(
@@ -176,19 +180,19 @@ async function queryInstanceMetrics(currentInstances: Instance[]) {
 }
 
 function clickInstance(scope: any) {
-  const d = getDashboard({
+  const { dashboard } = getDashboard({
     name: props.config.dashboardName,
     layer: dashboardStore.layerId,
     entity: EntityType[3].value,
   });
-  if (!d) {
+  if (!dashboard) {
     ElMessage.error("No this dashboard");
     return;
   }
   router.push(
-    `/dashboard/${d.layer}/${d.entity}/${selectorStore.currentService.id}/${
-      scope.row.id
-    }/${d.name.split(" ").join("-")}`
+    `/dashboard/${dashboard.layer}/${dashboard.entity}/${
+      selectorStore.currentService.id
+    }/${scope.row.id}/${dashboard.name.split(" ").join("-")}`
   );
 }
 

@@ -142,6 +142,10 @@ export function useSourceProcessor(
     ElMessage.error(resp.errors);
     return {};
   }
+  if (!resp.data) {
+    ElMessage.error("The query is wrong");
+    return {};
+  }
   const source: { [key: string]: unknown } = {};
   const keys = Object.keys(resp.data);
 
@@ -331,7 +335,7 @@ export function useQueryTopologyMetrics(metrics: string[], ids: string[]) {
 }
 function calculateExp(
   arr: { value: number }[],
-  config: { calculation: string }
+  config: { calculation?: string }
 ): (number | string)[] {
   const sum = arr
     .map((d: { value: number }) => d.value)
@@ -356,7 +360,7 @@ function calculateExp(
 
 export function aggregation(
   val: number,
-  config: { calculation: string }
+  config: { calculation?: string }
 ): number | string {
   let data: number | string = Number(val);
 
@@ -393,6 +397,9 @@ export function aggregation(
       break;
     case Calculations.MsTos:
       data = (val / 1000).toFixed(2);
+      break;
+    case Calculations.SecondToDay:
+      data = (val / 86400).toFixed(2);
       break;
     default:
       data;

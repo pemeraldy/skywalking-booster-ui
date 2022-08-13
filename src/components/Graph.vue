@@ -44,6 +44,17 @@ const props = defineProps({
     type: Object as PropType<{ [key: string]: any }>,
     default: () => ({}),
   },
+  filters: {
+    type: Object as PropType<{
+      duration: {
+        startTime: string;
+        endTime: string;
+      };
+      isRange: boolean;
+      dataIndex?: number;
+      sourceId: string;
+    }>,
+  },
 });
 const available = computed(
   () =>
@@ -53,9 +64,6 @@ const available = computed(
     (Array.isArray(props.option.series.data) && props.option.series.data[0])
 );
 onMounted(async () => {
-  if (!available.value) {
-    return;
-  }
   await setOptions(props.option);
   chartRef.value && addResizeListener(unref(chartRef), resize);
   setTimeout(() => {
@@ -64,11 +72,92 @@ onMounted(async () => {
     if (!instance) {
       return;
     }
-    instance.on("click", (params: any) => {
+    instance.on("click", (params: unknown) => {
       emits("select", params);
     });
+    document.addEventListener(
+      "click",
+      () => {
+        if (instance.isDisposed()) {
+          return;
+        }
+        instance.dispatchAction({
+          type: "hideTip",
+        });
+        instance.dispatchAction({
+          type: "updateAxisPointer",
+          currTrigger: "leave",
+        });
+      },
+      true
+    );
   }, 1000);
 });
+
+function updateOptions() {
+  const instance = getInstance();
+  if (!instance) {
+    return;
+  }
+  if (!props.filters) {
+    return;
+  }
+  if (props.filters.isRange) {
+    const options = eventAssociate();
+    setOptions(options || props.option);
+  } else {
+    instance.dispatchAction({
+      type: "showTip",
+      dataIndex: props.filters.dataIndex,
+      seriesIndex: 0,
+    });
+  }
+}
+
+function eventAssociate() {
+  if (!props.filters) {
+    return;
+  }
+  if (!props.filters.duration) {
+    return props.option;
+  }
+  if (!props.option.series[0]) {
+    return;
+  }
+  const list = props.option.series[0].data.map(
+    (d: (number | string)[]) => d[0]
+  );
+  if (!list.includes(props.filters.duration.endTime)) {
+    return;
+  }
+  const markArea = {
+    silent: true,
+    itemStyle: {
+      opacity: 0.3,
+    },
+    data: [
+      [
+        {
+          xAxis: props.filters.duration.startTime,
+        },
+        {
+          xAxis: props.filters.duration.endTime,
+        },
+      ],
+    ],
+  };
+  const series = (window as any).structuredClone(props.option.series);
+  for (const [key, temp] of series.entries()) {
+    if (key === 0) {
+      temp.markArea = markArea;
+    }
+  }
+  const options = {
+    ...props.option,
+    series,
+  };
+  return options;
+}
 
 watch(
   () => props.option,
@@ -79,7 +168,17 @@ watch(
     if (JSON.stringify(newVal) === JSON.stringify(oldVal)) {
       return;
     }
-    setOptions(newVal);
+    let options;
+    if (props.filters && props.filters.isRange) {
+      options = eventAssociate();
+    }
+    setOptions(options || props.option);
+  }
+);
+watch(
+  () => props.filters,
+  () => {
+    updateOptions();
   }
 );
 

@@ -174,7 +174,7 @@ import { useI18n } from "vue-i18n";
 import { useTraceStore } from "@/store/modules/trace";
 import { Option } from "@/types/app";
 import copy from "@/utils/copy";
-import LogTable from "@/views/dashboard/related/components/LogTable/Index.vue";
+import LogTable from "../../related/log/LogTable/Index.vue";
 import { ElMessage } from "element-plus";
 
 export default defineComponent({

@@ -20,7 +20,7 @@ limitations under the License. -->
         placeholder="Please input name"
         class="input-with-search ml-10"
         size="small"
-        @change="searchDashboards"
+        @change="searchDashboards(1)"
       >
         <template #append>
           <el-button size="small">
@@ -129,7 +129,8 @@ limitations under the License. -->
           small
           layout="prev, pager, next"
           :page-size="pageSize"
-          :total="dashboardStore.dashboards.length"
+          :total="total"
+          v-model="currentPage"
           @current-change="changePage"
           @prev-click="changePage"
           @next-click="changePage"
@@ -146,9 +147,10 @@ import type { ElTable } from "element-plus";
 import { useAppStoreWithOut } from "@/store/modules/app";
 import { useDashboardStore } from "@/store/modules/dashboard";
 import router from "@/router";
-import { DashboardItem } from "@/types/dashboard";
+import { DashboardItem, LayoutConfig } from "@/types/dashboard";
 import { saveFile, readFile } from "@/utils/file";
 import { EntityType } from "./data";
+import { isEmptyObject } from "@/utils/is";
 
 /*global Nullable*/
 const { t } = useI18n();
@@ -158,6 +160,8 @@ const pageSize = 18;
 const dashboards = ref<DashboardItem[]>([]);
 const searchText = ref<string>("");
 const loading = ref<boolean>(false);
+const currentPage = ref<number>(1);
+const total = ref<number>(0);
 const multipleTableRef = ref<InstanceType<typeof ElTable>>();
 const multipleSelection = ref<DashboardItem[]>([]);
 const dashboardFile = ref<Nullable<HTMLDivElement>>(null);
@@ -169,7 +173,7 @@ const handleSelectionChange = (val: DashboardItem[]) => {
 setList();
 async function setList() {
   await dashboardStore.setDashboards();
-  searchDashboards();
+  searchDashboards(1);
 }
 async function importTemplates(event: any) {
   const arr: any = await readFile(event);
@@ -221,11 +225,80 @@ function exportTemplates() {
     const layout = JSON.parse(sessionStorage.getItem(key) || "{}");
     return layout;
   });
+  for (const item of templates) {
+    optimizeTemplate(item.configuration.children);
+  }
   const name = `dashboards.json`;
   saveFile(templates, name);
   setTimeout(() => {
     multipleTableRef.value!.clearSelection();
   }, 2000);
+}
+function optimizeTemplate(
+  children: (LayoutConfig & {
+    moved?: boolean;
+    standard?: unknown;
+  })[]
+) {
+  for (const child of children || []) {
+    delete child.moved;
+    delete child.activedTabIndex;
+    delete child.standard;
+    delete child.id;
+    if (isEmptyObject(child.graph)) {
+      delete child.graph;
+    }
+    if (child.widget) {
+      if (child.widget.title === "") {
+        delete child.widget.title;
+      }
+      if (child.widget.tips === "") {
+        delete child.widget.tips;
+      }
+    }
+    if (isEmptyObject(child.widget)) {
+      delete child.widget;
+    }
+    if (!(child.metrics && child.metrics.length && child.metrics[0])) {
+      delete child.metrics;
+    }
+    if (
+      !(child.metricTypes && child.metricTypes.length && child.metricTypes[0])
+    ) {
+      delete child.metricTypes;
+    }
+    if (child.metricConfig && child.metricConfig.length) {
+      child.metricConfig.forEach((c, index) => {
+        if (!c.calculation) {
+          delete c.calculation;
+        }
+        if (!c.unit) {
+          delete c.unit;
+        }
+        if (!c.label) {
+          delete c.label;
+        }
+        if (isEmptyObject(c)) {
+          (child.metricConfig || []).splice(index, 1);
+        }
+      });
+    }
+    if (!(child.metricConfig && child.metricConfig.length)) {
+      delete child.metricConfig;
+    }
+    if (child.type === "Tab") {
+      for (const item of child.children || []) {
+        optimizeTemplate(item.children);
+      }
+    }
+    if (
+      ["Trace", "Topology", "Tab", "Profile", "Ebpf", "Log"].includes(
+        child.type
+      )
+    ) {
+      delete child.widget;
+    }
+  }
 }
 function handleEdit(row: DashboardItem) {
   dashboardStore.setMode(true);
@@ -304,7 +377,7 @@ async function setRoot(row: DashboardItem) {
     items.push(d);
   }
   dashboardStore.resetDashboards(items);
-  searchDashboards();
+  searchDashboards(1);
   loading.value = false;
 }
 function handleRename(row: DashboardItem) {
@@ -336,6 +409,7 @@ async function updateName(d: DashboardItem, value: string) {
     name: value,
   };
   delete c.id;
+  delete c.filters;
   const setting = {
     id: d.id,
     configuration: JSON.stringify(c),
@@ -387,10 +461,13 @@ function searchDashboards(pageIndex?: any) {
   const arr = list.filter((d: { name: string }) =>
     d.name.includes(searchText.value)
   );
-  dashboards.value = arr.splice(
-    (pageIndex - 1 || 0) * pageSize,
-    pageSize * (pageIndex || 1)
+
+  total.value = arr.length;
+  dashboards.value = arr.filter(
+    (d: { name: string }, index: number) =>
+      index < pageIndex * pageSize && index >= (pageIndex - 1) * pageSize
   );
+  currentPage.value = pageIndex;
 }
 
 async function reloadTemplates() {
@@ -399,6 +476,7 @@ async function reloadTemplates() {
   loading.value = false;
 }
 function changePage(pageIndex: number) {
+  currentPage.value = pageIndex;
   searchDashboards(pageIndex);
 }
 </script>

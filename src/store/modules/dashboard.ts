@@ -20,10 +20,8 @@ import { LayoutConfig } from "@/types/dashboard";
 import graphql from "@/graphql";
 import query from "@/graphql/fetch";
 import { DashboardItem } from "@/types/dashboard";
-import { useAppStoreWithOut } from "@/store/modules/app";
 import { useSelectorStore } from "@/store/modules/selectors";
 import { NewControl, TextConfig } from "../data";
-import { Duration } from "@/types/app";
 import { AxiosResponse } from "axios";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
@@ -35,7 +33,6 @@ interface DashboardState {
   entity: string;
   layerId: string;
   activedGridItem: string;
-  durationTime: Duration;
   selectorStore: any;
   showTopology: boolean;
   fullView: boolean;
@@ -45,6 +42,7 @@ interface DashboardState {
   dashboards: DashboardItem[];
   currentDashboard: Nullable<DashboardItem>;
   editMode: boolean;
+  currentTabIndex: number;
 }
 
 export const dashboardStore = defineStore({
@@ -56,7 +54,6 @@ export const dashboardStore = defineStore({
     entity: "",
     layerId: "",
     activedGridItem: "",
-    durationTime: useAppStoreWithOut().durationTime,
     selectorStore: useSelectorStore(),
     showTopology: false,
     showLogTools: false,
@@ -66,6 +63,7 @@ export const dashboardStore = defineStore({
     dashboards: [],
     currentDashboard: null,
     editMode: false,
+    currentTabIndex: 0,
   }),
   actions: {
     setLayout(data: LayoutConfig[]) {
@@ -93,6 +91,7 @@ export const dashboardStore = defineStore({
       const newItem: LayoutConfig = {
         ...NewControl,
         i: index,
+        id: index,
         type,
         metricTypes: [""],
         metrics: [""],
@@ -123,12 +122,7 @@ export const dashboardStore = defineStore({
               : 3,
         };
       }
-      if (
-        type === "Trace" ||
-        type === "Profile" ||
-        type === "Log" ||
-        type === "Ebpf"
-      ) {
+      if (["Trace", "Profile", "Log", "DemandLog", "Ebpf"].includes(type)) {
         newItem.h = 36;
       }
       if (type === "Text") {
@@ -170,9 +164,11 @@ export const dashboardStore = defineStore({
       if (!children.length) {
         index = "0";
       }
+      const id = `${activedGridItem}-${tabIndex}-${index}`;
       const newItem: LayoutConfig = {
         ...NewControl,
         i: index,
+        id,
         type,
         metricTypes: [""],
         metrics: [""],
@@ -183,7 +179,7 @@ export const dashboardStore = defineStore({
           showDepth: true,
         };
       }
-      if (type === "Trace" || type === "Profile" || type === "Log") {
+      if (["Trace", "Profile", "Log", "DemandLog", "Ebpf"].includes(type)) {
         newItem.h = 32;
       }
       if (type === "Text") {
@@ -204,6 +200,7 @@ export const dashboardStore = defineStore({
       this.activedGridItem = index;
     },
     setActiveTabIndex(index: number, target?: number) {
+      this.currentTabIndex = index;
       const m = target || this.activedGridItem;
       const idx = this.layout.findIndex((d: LayoutConfig) => d.i === m);
       if (idx < 0) {
@@ -298,6 +295,28 @@ export const dashboardStore = defineStore({
         ...param,
       };
       this.selectedGrid = this.layout[index];
+    },
+    setWidget(param: LayoutConfig) {
+      for (let i = 0; i < this.layout.length; i++) {
+        if (this.layout[i].type === "Tab") {
+          if (this.layout[i].children && this.layout[i].children.length) {
+            for (const child of this.layout[i].children) {
+              if (child.children && child.children.length) {
+                for (let c = 0; c < child.children.length; c++) {
+                  if (child.children[c].id === param.id) {
+                    child.children.splice(c, 1, param);
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          if (this.layout[i].id === param.id) {
+            this.layout.splice(i, 1, param);
+          }
+        }
+      }
     },
     async fetchMetricType(item: string) {
       const res: AxiosResponse = await graphql

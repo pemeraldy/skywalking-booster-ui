@@ -58,6 +58,7 @@ limitations under the License. -->
           :intervalTime="intervalTime"
           :colMetrics="colMetrics"
           :config="config"
+          v-if="colMetrics.length"
         />
       </el-table>
     </div>
@@ -117,7 +118,7 @@ const searchText = ref<string>("");
 const groups = ref<any>({});
 const sortServices = ref<(Service & { merge: boolean })[]>([]);
 const colMetrics = computed(() =>
-  props.config.metrics.filter((d: string) => d)
+  (props.config.metrics || []).filter((d: string) => d)
 );
 queryServices();
 
@@ -178,16 +179,16 @@ function setServices(arr: (Service & { merge: boolean })[]) {
 }
 
 function clickService(scope: any) {
-  const d = getDashboard({
+  const { dashboard } = getDashboard({
     name: props.config.dashboardName,
     layer: dashboardStore.layerId,
     entity: EntityType[0].value,
   });
-  if (!d) {
+  if (!dashboard) {
     ElMessage.error("No this dashboard");
     return;
   }
-  const path = `/dashboard/${d.layer}/${d.entity}/${scope.row.id}/${d.name}`;
+  const path = `/dashboard/${dashboard.layer}/${dashboard.entity}/${scope.row.id}/${dashboard.name}`;
 
   router.push(path);
 }
@@ -195,7 +196,8 @@ async function queryServiceMetrics(currentServices: Service[]) {
   if (!currentServices.length) {
     return;
   }
-  const { metrics, metricTypes } = props.config;
+  const metrics = props.config.metrics || [];
+  const metricTypes = props.config.metricTypes || [];
 
   if (metrics.length && metrics[0] && metricTypes.length && metricTypes[0]) {
     const params = await useQueryPodsMetrics(

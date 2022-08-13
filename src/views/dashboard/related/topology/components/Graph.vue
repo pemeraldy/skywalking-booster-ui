@@ -34,7 +34,7 @@ limitations under the License. -->
         </span>
       </div>
     </div>
-    <div class="setting" v-if="showSetting">
+    <div class="setting" v-if="showSetting && dashboardStore.editMode">
       <Settings @update="updateSettings" @updateNodes="freshNodes" />
     </div>
     <div class="tool">
@@ -113,6 +113,7 @@ import getDashboard from "@/hooks/useDashboardsSession";
 import { MetricConfigOpt } from "@/types/dashboard";
 import { aggregation } from "@/hooks/useProcessor";
 import icons from "@/assets/img/icons";
+import { useQueryTopologyMetrics } from "@/hooks/useProcessor";
 
 /*global Nullable, defineProps */
 const props = defineProps({
@@ -170,6 +171,7 @@ onMounted(async () => {
   width.value = dom.width;
   window.addEventListener("resize", resize);
   svg.value = d3.select(chart.value).append("svg").attr("class", "topo-svg");
+  await initLegendMetrics();
   await init();
   update();
   setNodeTools(settings.value.nodeDashboard);
@@ -199,6 +201,18 @@ async function init() {
     topologyStore.setLink(null);
     dashboardStore.selectWidget(props.config);
   });
+}
+
+async function initLegendMetrics() {
+  const ids = topologyStore.nodes.map((d: Node) => d.id);
+  const names = props.config.legend.map((d: any) => d.name);
+  if (names.length && ids.length) {
+    const param = await useQueryTopologyMetrics(names, ids);
+    const res = await topologyStore.getLegendMetrics(param);
+    if (res.errors) {
+      ElMessage.error(res.errors);
+    }
+  }
 }
 function ticked() {
   link.value.attr(
@@ -272,13 +286,19 @@ function handleLinkClick(event: any, d: Call) {
     dashboardStore.entity === EntityType[1].value
       ? EntityType[0].value
       : dashboardStore.entity;
-  const p = getDashboard({
+  const { dashboard } = getDashboard({
     name: settings.value.linkDashboard,
     layer: dashboardStore.layerId,
     entity: `${e}Relation`,
   });
-  dashboardStore.setEntity(p.entity);
-  const path = `/dashboard/related/${p.layer}/${e}Relation/${d.source.id}/${d.target.id}/${p.name}`;
+  if (!dashboard) {
+    ElMessage.error(
+      `The dashboard named ${settings.value.linkDashboard} doesn't exist`
+    );
+    return;
+  }
+  dashboardStore.setEntity(dashboard.entity);
+  const path = `/dashboard/related/${dashboard.layer}/${e}Relation/${d.source.id}/${d.target.id}/${dashboard.name}`;
   const routeUrl = router.resolve({ path });
   window.open(routeUrl.href, "_blank");
   dashboardStore.setEntity(origin);
@@ -532,6 +552,9 @@ function setNodeTools(nodeDashboard: any) {
   }
 }
 async function freshNodes() {
+  if (!svg.value) {
+    return;
+  }
   svg.value.selectAll(".topo-svg-graph").remove();
   await init();
   update();

@@ -56,6 +56,10 @@ export const ServiceLogConstants = [
     value: "traceID",
     isVisible: true
   },
+  {
+    label: "content",
+    value: "content",
+  },
 ];
 export const ServiceLogDetail = [
   {

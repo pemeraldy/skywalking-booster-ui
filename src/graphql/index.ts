@@ -26,6 +26,7 @@ import * as profile from "./query/profile";
 import * as alarm from "./query/alarm";
 import * as event from "./query/event";
 import * as ebpf from "./query/ebpf";
+import * as demandLog from "./query/demand-log";
 
 const query: { [key: string]: string } = {
   ...app,
@@ -38,6 +39,7 @@ const query: { [key: string]: string } = {
   ...alarm,
   ...event,
   ...ebpf,
+  ...demandLog,
 };
 class Graphql {
   private queryData = "";
@@ -57,7 +59,7 @@ class Graphql {
           cancelToken: cancelToken(),
           headers: {
             Authorization:
-              "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJkZXZlbG9wZXJfaWQiOiJzeXN0ZW0iLCJjcmVhdGVkX2F0IjoxNjYwMDk3MzE1NDAzLCJleHBpcmVzX2F0IjoxNjkxNjMzMzE1NDAzLCJpYXQiOjE2NjAwOTczMTV9.PvPXbBWsqJH0I1Bdh0Tl61h1IRofrukdnKVFad92yRWR6bLT1mxQR6WeXZj_ZZnaakrgzY_x3ojJg-dgAcINU4Q8iyDqDShM8fTlhT1WkzfZAFNBAFyGP6bMzTycAH2hyCRRi6rUrK-16gSL5cSopUtya0SVWKr_aSh96lEQCFUDKg9fLwNu3vGTXhNbhpnoshABwOXVMnwvet73R8BU8gIeKjI953xyN9Xqp7mV4wNZGC3ZjzrLQ0kVGY3AYYSoeqHzlYwKA-S5yuGlsnGyjyJqpBhOuYCfMWNmE_WJ_km2ikuBIkR9ZwLZ5E1hBBklKOG-paxQyQ13HnzIhGe5IgA5CGZ3P-6wH6ckI1ZUdSo8Cm4xUEXekwcLX2pHluUWX0qkHKDAwB3tgvhbN5_zTJPWRr1QFmfhckt-7YV8YieDhGT4aJdav78KhwKEb5esNumYYNrUFYUmhHDqniR3nZAjhDwl0zoK3eVdxU3SZq2py5SUPxSUFnIhJVS6kapHdwrPS8fFZxMHt0RwyxjkOsQgsvfVcwc8cbCx6kGaZdFawyKe9PtAe6b58zrO-mzuCm7OzA0q_pT0qZsRjh7ybDF9P1Qy6m_jeG6L7duI9J60iK9LpljACAG7qt5LyPT0t8Aqv-gE704Rc-dTASi3V44yroA7Br_-qIYTw5ux_QA",
+              "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJkZXZlbG9wZXJfaWQiOiJzeXN0ZW0iLCJjcmVhdGVkX2F0IjoxNjYwMzY2MzU0NjUzLCJleHBpcmVzX2F0IjoxNjkxOTAyMzU0NjUzLCJpYXQiOjE2NjAzNjYzNTR9.LKKnNAa-QpfNq1jlUKiLMPkAYcHQ_hKd6bofmtFRAULkOMYx1IGUE6V-c79JEkvZF2hBDjwCJAHuy3qmUBye_4Y_Sgk9zBtNLKVtqJ0TaJhVBXytTiJ24S2hAb-USQTPE4-lhSCO_SYsoTtsY2zTvD0rCUW6Xt67UDAYwDwgcFkyrEmwVKzgRhWt6h8FGFZPxK-GbMSWCXZa4C_CtRdLEDAHCCPHDzEVcI2qsijxnhtTeK3Xp-kKmWcdpdGKh9cQO2Jkg3nhScbWrhn6Hk7MAj1bLgCp5-2VmhdFLyCzb79eIeNAbTwdjPWEfxz6nPlSQaLSvHIvlldUrC7fdnN-vrOd6sswW9EJBwjGJSgi7xhneO5p20s95Hb4EotPo-9yUzeE2_CmK2mhzVCBpvapRmtRrGbnCQN1xoevKAhuYJkL76qJKGG_SH5lFmzC9fwRUuE4lx0VZoNeQ82G0lRf15uZd9rerc8IzunHyeq3EofaBRBpJzWIINOlqD8DCePHdKYWXDk5EaQbFSscxgizuHd6T5bZKEl7ZZ1Iz4N5cm6pqzKdWv0-LPbyZi69PFFJl05WMIKgr4z-5gKq4JRKNLdrL4TerqnK9TZRWigwRw299nDXrmWI7y2k0AE3chvbS7j16xWEw4pqoQRpuJkDQwfPmHQ573O1I8ktSHKCMJs",
           },
         }
       )
