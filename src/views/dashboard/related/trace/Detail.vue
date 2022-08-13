@@ -129,9 +129,11 @@ export default defineComponent({
   // height: calc(100% - 100px);
   overflow: auto;
 }
+
 .trace-chart.full-view {
   height: calc(100% - 1px) !important;
 }
+
 .trace-detail-wrapper {
   font-size: 12px;
   padding: 5px 10px;

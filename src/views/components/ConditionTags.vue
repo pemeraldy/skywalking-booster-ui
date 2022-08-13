@@ -68,7 +68,6 @@ import { useAppStoreWithOut } from "@/store/modules/app";
 
 /*global defineEmits, defineProps */
 const emit = defineEmits(["update"]);
-
 const props = defineProps({
   type: { type: String, default: "TRACE" },
 });
@@ -89,13 +88,13 @@ const tagKeys = ref<string[]>([]);
 // };
 
 fetchTagKeys();
-
+//  eslint-disable-next-line no-undef
 defineExpose({
   tagsList,
-  emptyTags
-})
-function emptyTags (){
-  tagsList.value = []
+  emptyTags,
+});
+function emptyTags() {
+  tagsList.value = [];
 }
 function removeTags(index: number) {
   tagsList.value.splice(index, 1);
@@ -191,6 +190,7 @@ watch(
 .items-center {
   align-items: center;
 }
+
 .trace-tags {
   padding: 1px 5px 0 0;
   border-radius: 3px;

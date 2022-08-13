@@ -163,7 +163,7 @@ export default defineComponent({
       initScroller();
 
       if (query["portal"] === "true") {
-        connect();
+        connect(parseInt(window.location.port));
       }
     });
     onBeforeUnmount(() => {
@@ -224,10 +224,6 @@ export default defineComponent({
 }
 
 .item {
-  // scroll-snap-align: start;
   height: 100%;
-  // padding: 40px;
-  // margin: 40px 0;
-  // background: orange;
 }
 </style>
