@@ -182,7 +182,7 @@ export default defineComponent({
   components: {
     LogTable,
   },
-  setup(props, ctx) {
+  setup() {
     const { t } = useI18n();
     const traceStore = useTraceStore();
     const loading = ref<boolean>(false);
@@ -272,6 +272,7 @@ export default defineComponent({
   overflow: auto;
   padding-bottom: 20px;
 }
+
 .trace-chart.full-view {
   height: calc(100% - 1px) !important;
 }
@@ -325,13 +326,16 @@ export default defineComponent({
   width: 100%;
   text-align: center;
 }
+
 .vm {
   margin-right: 4px;
 }
+
 .filter-btn {
   height: 18px;
   margin: 0 5px;
 }
+
 .copy-btn {
   height: 18px;
   width: 10px;
