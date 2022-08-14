@@ -29,9 +29,7 @@ limitations under the License. -->
         <span>{{ t("delete") }}</span>
       </div>
     </el-popover>
-    <div class="header">
-      <Filter :needQuery="needQuery" :data="data" />
-    </div>
+    
     <div class="trace flex-h">
       <TraceList @show:trace="showTraceDetails" v-if="traceListActive" />
       <TraceDetail @show:list="showTraceList" v-if="!traceListActive" />
