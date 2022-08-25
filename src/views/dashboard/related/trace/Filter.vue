@@ -111,46 +111,25 @@ limitations under the License. -->
           @update="updateTags"
         />
       </keep-alive>
-      <el-button
-        v-if="activeFilter"
-        class="search-btn filter-btn"
-        size="small"
-        type="primary"
-        @click="searchTraces"
-      >
-        <Icon iconSize="sm" iconName="search" />
-      </el-button>
-      <el-button
-        v-if="activeFilter"
-        class="search-btn filter-btn"
-        size="small"
-        type="danger"
-        @click="cancelSearch"
-      >
-        <Icon iconSize="sm" iconName="cancel" />
-      </el-button>
-    </div>
-  </div>
-  <div class="flex-h row">
-    <div class="mr-10">
-      <span class="grey mr-5">{{ t("traceID") }}:</span>
-      <el-input size="small" v-model="traceId" class="traceId" />
-    </div>
-    <div class="mr-10">
-      <span class="sm b grey mr-5">{{ t("duration") }}:</span>
-      <el-input
-        size="small"
-        class="inputs mr-5"
-        v-model="minTraceDuration"
-        type="number"
-      />
-      <span class="grey mr-5">-</span>
-      <el-input
-        size="small"
-        class="inputs"
-        v-model="maxTraceDuration"
-        type="number"
-      />
+      <!-- SEARCH & CANCEL BTN -->
+      <div v-if="activeFilter">
+        <el-button
+          class="search-btn filter-btn"
+          size="small"
+          type="primary"
+          @click="searchTraces"
+        >
+          <Icon iconSize="sm" iconName="search" />
+        </el-button>
+        <el-button
+          class="search-btn filter-btn"
+          size="small"
+          type="danger"
+          @click="cancelSearch"
+        >
+          <Icon iconSize="sm" iconName="cancel" />
+        </el-button>
+      </div>
     </div>
   </div>
 </template>
@@ -516,26 +495,32 @@ watch(
   // top: 0;
   // right: 10px;
 }
+
 .filter-container {
   align-items: center;
 }
+
 .wrap-filters {
   padding: 0 10px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+
   .filter {
     margin: 0;
     display: flex;
     align-items: center;
   }
 }
+
 .filter-btn {
   height: 18px;
   margin: 0 5px;
 }
+
 .active-filter.filter-btn {
   background: rgba(4, 147, 114, 1) !important;
+
   span {
     color: #275410 !important;
   }
