@@ -15,7 +15,7 @@ limitations under the License. -->
 
 <template>
   <div class="log">
-    <div :class="{ 'd-flex': visibleColumns.length < 6 }" class="log-header">      
+    <div :class="{ 'd-flex': visibleColumns.length < 6 }" class="log-header">
       <template v-for="(item, index) in columns">
         <template v-if="item.isVisible">
           <div
@@ -144,10 +144,40 @@ function setCurrentLog(log: any) {
   white-space: nowrap;
 }
 
-.d-flex{
+.d-flex {
   display: flex;
-  div{
+
+  div {
     flex-grow: 1;
   }
+}
+
+.browser-header {
+  div {
+    min-width: 140px;
+    width: 10%;
+  }
+
+  .max-item {
+    width: 20%;
+  }
+}
+
+.service-header div {
+  width: 140px;
+}
+</style>
+<style scoped>
+.log-header div {
+  width: 140px;
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-right: 1px dotted silver;
+  line-height: 30px;
+  background-color: #f3f4f9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
